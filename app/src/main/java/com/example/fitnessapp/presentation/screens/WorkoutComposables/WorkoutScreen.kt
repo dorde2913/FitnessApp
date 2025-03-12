@@ -37,29 +37,6 @@ fun WorkoutScreen(modifier: Modifier = Modifier, viewModel: WorkoutViewModel
             0-> WorkoutSelector(WorkoutType.GYM,viewModel, navigateToOngoing)
             1-> WorkoutSelector(WorkoutType.CARDIO,viewModel,navigateToOngoing)
         }
-        /*
-
-        AnimatedContent(
-            targetState = uiState.workoutState,
-            label = "buh"
-        ) {
-            when(it){
-                WorkoutState.ONGOING->{
-                    OngoingWorkout(viewModel)
-                }
-
-                WorkoutState.PREPARING->{
-
-                }
-
-                WorkoutState.FINISHED->{
-                    //composable
-                }
-            }
-        }
-
-         */
-
 
     }
 }

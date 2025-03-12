@@ -32,7 +32,10 @@ import javax.inject.Inject
 data class ExerciseUIState(
     val workoutState: WorkoutState = WorkoutState.PREPARING,
     val type: WorkoutType = WorkoutType.GYM,
-    val workoutLabel: String = ""
+    val workoutLabel: String = "",
+    val workoutLength: Long = 0L,
+    val totalCals: Double = 0.0,
+    val averageBPM: Double = 0.0
 ) : Parcelable
 
 
@@ -193,6 +196,13 @@ class WorkoutViewModel @Inject constructor(
 
     fun finishExercise(){
         //ovde treba uzeti i podatke za overview
+        savedStateHandle[KEY] = _uiState.value.copy(
+            workoutLength = _elapsedTime.value,
+            totalCals = totalCals.value,
+        )
+
+
+
         context.stopService(
             Intent().apply {
                 setClass(

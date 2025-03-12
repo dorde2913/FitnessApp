@@ -6,6 +6,7 @@
 package com.example.fitnessapp.presentation
 
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -88,13 +90,27 @@ class MainActivity : ComponentActivity() {
 
 
         setContent {
-            WearApp()
+            WearApp(this)
         }
     }
 }
 
 @Composable
-fun WearApp() {
+fun WearApp(context: Context) {
+
+    var checked by rememberSaveable { mutableStateOf(
+        context.getSharedPreferences("screenAlwaysOn", Context.MODE_PRIVATE).getBoolean("screenAlwaysOn",false)
+    ) }
+    val sharedPref = context.getSharedPreferences("screenAlwaysOn", Context.MODE_PRIVATE)
+        .registerOnSharedPreferenceChangeListener { sharedPreferences, s ->
+            checked = sharedPreferences.getBoolean("screenAlwaysOn",false)
+        }
+
+    val view = LocalView.current
+    DisposableEffect(checked) {
+        view.keepScreenOn = checked
+        onDispose {}
+    }
 
 
     val workoutViewModel: WorkoutViewModel = viewModel()
@@ -107,7 +123,6 @@ fun WearApp() {
         //start servisa ili stagod
     }
 
-    val context = LocalContext.current
 
     val healthClient: HealthServicesClient = HealthServices.getClient(context)
     val passiveMonitoringClient: PassiveMonitoringClient = healthClient.passiveMonitoringClient
@@ -205,7 +220,7 @@ fun WearApp() {
                     HealthScreen()
                 }
                 composable(route = DestinationSettings.route){
-                    SettingScreen()
+                    SettingScreen(context=context)
                 }
                 composable(route = DestinationWorkoutOngoing.route){
                     OngoingWorkout(viewModel = workoutViewModel,
@@ -227,8 +242,3 @@ fun WearApp() {
     }
 }
 
-@Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
-@Composable
-fun DefaultPreview() {
-    WearApp()
-}
