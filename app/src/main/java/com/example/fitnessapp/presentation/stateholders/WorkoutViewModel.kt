@@ -3,6 +3,7 @@ package com.example.fitnessapp.presentation.stateholders
 import android.content.Context
 import android.content.Intent
 import android.os.Parcelable
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,7 +36,9 @@ data class ExerciseUIState(
     val workoutLabel: String = "",
     val workoutLength: Long = 0L,
     val totalCals: Double = 0.0,
-    val averageBPM: Double = 0.0
+    val averageBPM: Double = 0.0,
+    val distance: Double = 0.0,
+    val averageSpeed: Double = 0.0
 ) : Parcelable
 
 
@@ -96,6 +99,12 @@ class WorkoutViewModel @Inject constructor(
         )
     }
 
+    fun setType(type: WorkoutType){
+        savedStateHandle[KEY] = _uiState.value.copy(
+            type = type
+        )
+    }
+
     fun setCardio(){
         savedStateHandle[KEY] = _uiState.value.copy(
             type = WorkoutType.CARDIO
@@ -123,9 +132,8 @@ class WorkoutViewModel @Inject constructor(
     //temp values dok ne odradim repository
     val heartRate = exerciseClientRepository.currentHeartRate
     val totalCals = exerciseClientRepository.totalCals
-    val steps = 0
-    val distance = 0.0
-    val speed = 0.0
+    val distance = exerciseClientRepository.totalDistance
+    val speed = exerciseClientRepository.currentSpeed
 
     //stoperica
     private val _elapsedTime = MutableStateFlow(0L)
@@ -181,7 +189,10 @@ class WorkoutViewModel @Inject constructor(
     }
 
 
-    fun startExercise() =
+    fun startExercise() {
+        Log.d("EXERCISE START","TYPE: ${uiState.value.type}")
+        exerciseClientRepository.currentType = uiState.value.type
+
         context.startForegroundService(
             Intent().apply {
                 setClass(
@@ -190,6 +201,8 @@ class WorkoutViewModel @Inject constructor(
                 )
             }
         )
+    }
+
 
     fun prepareExercise() =
         exerciseClientRepository.prepareExercise()
@@ -199,9 +212,8 @@ class WorkoutViewModel @Inject constructor(
         savedStateHandle[KEY] = _uiState.value.copy(
             workoutLength = _elapsedTime.value,
             totalCals = totalCals.value,
+            distance = distance.value
         )
-
-
 
         context.stopService(
             Intent().apply {

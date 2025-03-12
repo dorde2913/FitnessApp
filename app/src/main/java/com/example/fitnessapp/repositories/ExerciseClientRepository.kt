@@ -20,6 +20,7 @@ import androidx.health.services.client.endExercise
 import androidx.health.services.client.getCurrentExerciseInfo
 import androidx.health.services.client.prepareExercise
 import androidx.health.services.client.startExercise
+import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import com.example.fitnessapp.services.FitService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -37,14 +38,15 @@ class ExerciseClientRepository @Inject constructor(
     private val healthServicesClient = HealthServices.getClient(context)
     private val exerciseClient = healthServicesClient.exerciseClient
 
-    private val dataTypes = setOf(
+    private var dataTypes = setOf(
         DataType.HEART_RATE_BPM,
         DataType.CALORIES_TOTAL,
         DataType.SPEED,
-        DataType.STEPS,
-        DataType.LOCATION
+        DataType.LOCATION,
+        DataType.DISTANCE_TOTAL
     )
-    
+
+    var currentType = WorkoutType.GYM
 
     val _sensorState = MutableStateFlow(false)
     val sensorState = _sensorState.asStateFlow()
@@ -55,11 +57,16 @@ class ExerciseClientRepository @Inject constructor(
     val _calories = MutableStateFlow(0.0)
     var totalCals = _calories.asStateFlow()
 
+    val _distance = MutableStateFlow(0.0)
+    val totalDistance = _distance.asStateFlow()
+
+    val _speed = MutableStateFlow(0.0)
+    val currentSpeed = _speed.asStateFlow()
 
 
 
 
-    private val config = ExerciseConfig.builder(exerciseType = ExerciseType.RUNNING)
+    private var config = ExerciseConfig.builder(exerciseType = ExerciseType.RUNNING)
         .setDataTypes(dataTypes)
         .setIsGpsEnabled(true)
         .setIsAutoPauseAndResumeEnabled(false)
@@ -101,16 +108,21 @@ class ExerciseClientRepository @Inject constructor(
             }
             //speed,location,steps
 
-            if (latestMetrics.getData(DataType.STEPS).isNotEmpty()){
-                Log.d("STEPS", latestMetrics.getData(DataType.STEPS)[0].value.toString())
-            }
+
 
             if (latestMetrics.getData(DataType.LOCATION).isNotEmpty()){
                 Log.d("LOCATION", latestMetrics.getData(DataType.LOCATION)[0].value.toString())
+                //ovo za rutu
             }
 
             if (latestMetrics.getData(DataType.SPEED).isNotEmpty()){
                 Log.d("SPEED", latestMetrics.getData(DataType.SPEED)[0].value.toString())
+                _speed.value =latestMetrics.getData(DataType.SPEED)[0].value
+            }
+
+            if (latestMetrics.getData(DataType.DISTANCE_TOTAL)!=null){
+                Log.d("DISTANCE", latestMetrics.getData(DataType.DISTANCE_TOTAL)!!.total.toString())
+                _distance.value = latestMetrics.getData(DataType.DISTANCE_TOTAL)!!.total
             }
 
         }
@@ -137,9 +149,9 @@ class ExerciseClientRepository @Inject constructor(
                 WarmUpConfig(ExerciseType.RUNNING, dataTypes = setOf(
                     DataType.HEART_RATE_BPM,
                     DataType.CALORIES,
-                    DataType.STEPS,
                     DataType.SPEED,
-                    DataType.LOCATION
+                    DataType.LOCATION,
+                    DataType.DISTANCE
                 ))
             )
 
@@ -147,6 +159,31 @@ class ExerciseClientRepository @Inject constructor(
     }
 
     fun startExercise(){
+        Log.d("EXERCISE START","TYPE: $currentType")
+
+        if (currentType == WorkoutType.GYM){
+            dataTypes = setOf(
+                DataType.HEART_RATE_BPM,
+                DataType.CALORIES_TOTAL
+            )
+        }
+        else {
+            dataTypes = setOf(
+                DataType.HEART_RATE_BPM,
+                DataType.CALORIES_TOTAL,
+                DataType.LOCATION,
+                DataType.DISTANCE_TOTAL,
+                DataType.SPEED
+            )
+        }
+
+        config = ExerciseConfig.builder(exerciseType = ExerciseType.RUNNING)
+            .setDataTypes(dataTypes)
+            .setIsGpsEnabled(true)
+            .setIsAutoPauseAndResumeEnabled(false)
+            .setBatchingModeOverrides(setOf(BatchingMode.HEART_RATE_5_SECONDS))
+            .build()
+
         CoroutineScope(Dispatchers.Default).launch {
            exerciseClient.setUpdateCallback(callback)
            exerciseClient.startExercise(config)

@@ -97,6 +97,7 @@ fun WorkoutSelector(type: WorkoutType, viewModel: WorkoutViewModel, navigateToOn
                     .fillMaxSize()
                     .clickable {
                         //start exercise
+                        viewModel.setType(type)
 
                         viewModel.setLabel(
                             workouts[type]?.get(index)?.label ?: "No label"

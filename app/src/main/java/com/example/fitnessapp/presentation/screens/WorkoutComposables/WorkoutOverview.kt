@@ -83,7 +83,7 @@ fun WorkoutOverview(viewModel: WorkoutViewModel){
             ){
                 Icon(painterResource(R.drawable.caloriesicon_removebg_preview),null, tint = textColor,
                     modifier = Modifier.size(20.dp))
-                Text("calories: ${String.format("%.2f",uiState.totalCals)}", color = textColor, fontSize = 20.sp,
+                Text("calories: ${String.format("%.2f",uiState.totalCals)}kcal", color = textColor, fontSize = 20.sp,
                     textAlign = TextAlign.Center)
             }
 
@@ -91,6 +91,30 @@ fun WorkoutOverview(viewModel: WorkoutViewModel){
                 /*
                 Ovde idu prikazi za distance i average speed npr
                  */
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(painterResource(R.drawable.caloriesicon_removebg_preview),null, tint = textColor,
+                        modifier = Modifier.size(20.dp))
+                    Text("calories: ${uiState.distance.toInt()} meters", color = textColor, fontSize = 20.sp,
+                        textAlign = TextAlign.Center)
+                }
+                /*
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Icon(painterResource(R.drawable.caloriesicon_removebg_preview),null, tint = textColor,
+                        modifier = Modifier.size(20.dp))
+                    Text("calories: ${String.format("%.2f",uiState.totalCals)}kcal", color = textColor, fontSize = 20.sp,
+                        textAlign = TextAlign.Center)
+                }
+
+                 */
+
             }
 
         }

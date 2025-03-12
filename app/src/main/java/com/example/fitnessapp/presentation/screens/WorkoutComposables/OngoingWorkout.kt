@@ -7,6 +7,8 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +20,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
@@ -40,6 +44,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
+import androidx.wear.compose.foundation.lazy.ScalingLazyColumnDefaults
+import androidx.wear.compose.foundation.lazy.ScalingParams
 import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.ChipDefaults
 
@@ -48,6 +55,7 @@ import androidx.wear.compose.material.MaterialTheme
 import com.example.fitnessapp.R
 import com.example.fitnessapp.database.entities.Workout
 import com.example.fitnessapp.presentation.stateholders.TimerState
+import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import com.example.fitnessapp.presentation.stateholders.WorkoutViewModel
 
 @SuppressLint("DefaultLocale")
@@ -62,12 +70,15 @@ fun OngoingWorkout(viewModel: WorkoutViewModel, navigateToOverview: ()->Unit){
     val timer by viewModel.stopWatchText.collectAsState()
     val heartRate by viewModel.heartRate.collectAsState()
     val calories by viewModel.totalCals.collectAsState()
+    val speed by viewModel.speed.collectAsState()
+    val distance by viewModel.distance.collectAsState()
 
     val uiState by viewModel.uiState.collectAsState()
     val timerState by viewModel.timerState.collectAsState()
 
     val workout by viewModel.getWorkoutByLabel(uiState.workoutLabel).collectAsStateWithLifecycle(initialValue = Workout())
     //if (workout!=null)
+
 
 
     LaunchedEffect(Unit) {
@@ -86,8 +97,33 @@ fun OngoingWorkout(viewModel: WorkoutViewModel, navigateToOverview: ()->Unit){
             Spacer(Modifier.height(20.dp))
             OngoingWorkoutChip(uiState.workoutLabel, cardHeight = 30, middleText = true)
             OngoingWorkoutChip(timer,R.drawable.stopwatchicon_removebg_preview, textSize = 30, iconSize = 20)
-            OngoingWorkoutChip("${heartRate}bpm",R.drawable.heartrateicon_removebg_preview, iconSize = 20)
-            OngoingWorkoutChip("${String.format("%.2f",calories)}kcal",R.drawable.caloriesicon_removebg_preview, iconSize = 20)
+
+            Column(
+                modifier = Modifier.verticalScroll(
+                    state = rememberScrollState(),
+                ).fillMaxWidth(),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            )
+            {
+                OngoingWorkoutChip("${heartRate}bpm",R.drawable.heartrateicon_removebg_preview, iconSize = 20)
+                OngoingWorkoutChip("${String.format("%.2f",calories)}kcal",R.drawable.caloriesicon_removebg_preview, iconSize = 20)
+
+                val distanceKM = distance.toInt()/1000
+                val distanceMeter = distance.toInt()%1000
+
+                if (workout.workoutType == WorkoutType.CARDIO){
+                    OngoingWorkoutChip(
+                        label = "Current speed: ${String.format("%.2f",speed)} m/s"
+                    )
+                    OngoingWorkoutChip(
+                        label = if (distanceKM>0) "Distance: ${distanceKM}km ${distanceMeter}m"
+                        else "Distance: $distanceMeter"
+                    )
+                    Spacer(modifier = Modifier.height(50.dp))
+                }
+            }
+
         }
         AnimatedVisibility(
             visible = showOverlay,
@@ -99,7 +135,6 @@ fun OngoingWorkout(viewModel: WorkoutViewModel, navigateToOverview: ()->Unit){
             )
         ) {
             OngoingExerciseOverlay(viewModel,navigateToOverview)
-
         }
     }
 
