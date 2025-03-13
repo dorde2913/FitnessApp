@@ -1,9 +1,7 @@
 package com.example.fitnessapp.repositories
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
-import androidx.core.content.ContextCompat.startForegroundService
 import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServices
 import androidx.health.services.client.data.Availability
@@ -15,19 +13,28 @@ import androidx.health.services.client.data.ExerciseLapSummary
 import androidx.health.services.client.data.ExerciseState
 import androidx.health.services.client.data.ExerciseType
 import androidx.health.services.client.data.ExerciseUpdate
+import androidx.health.services.client.data.LocationData
 import androidx.health.services.client.data.WarmUpConfig
 import androidx.health.services.client.endExercise
 import androidx.health.services.client.getCurrentExerciseInfo
 import androidx.health.services.client.prepareExercise
 import androidx.health.services.client.startExercise
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
-import com.example.fitnessapp.services.FitService
+import com.google.android.gms.wearable.DataEvent
+import com.google.android.gms.wearable.DataMapItem
+import com.google.android.gms.wearable.PutDataMapRequest
+import com.google.android.gms.wearable.Wearable
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.nio.ByteBuffer
+import java.time.Instant
+import java.time.LocalTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,6 +44,8 @@ class ExerciseClientRepository @Inject constructor(
 ) {
     private val healthServicesClient = HealthServices.getClient(context)
     private val exerciseClient = healthServicesClient.exerciseClient
+
+    private val dataClient by lazy {Wearable.getDataClient(context)}
 
     private var dataTypes = setOf(
         DataType.HEART_RATE_BPM,
@@ -63,7 +72,24 @@ class ExerciseClientRepository @Inject constructor(
     val _speed = MutableStateFlow(0.0)
     val currentSpeed = _speed.asStateFlow()
 
+    val ongoing = MutableStateFlow(false)
+    val isOngoing = ongoing.asStateFlow()
 
+    init{
+        dataClient.addListener{dataEvents ->
+            println("DATA CHANGED")
+            dataEvents.forEach { event ->
+                if (event.type == DataEvent.TYPE_DELETED) {
+
+                    val dataItem = event.dataItem
+                    if (dataItem.uri.path?.endsWith("/heartrate") == true) {
+                        //sendToHandheld()
+                    }
+                }
+            }
+
+        }
+    }
 
 
     private var config = ExerciseConfig.builder(exerciseType = ExerciseType.RUNNING)
@@ -73,18 +99,29 @@ class ExerciseClientRepository @Inject constructor(
         .setBatchingModeOverrides(setOf(BatchingMode.HEART_RATE_5_SECONDS))
         .build()
 
+
+    var BPMList: MutableList<Int> = mutableListOf()
+    var locationList: MutableList<LocationData> = mutableListOf()
+    //za kalorije i distancu ne mora lista uopste
+
+
     val callback = object: ExerciseUpdateCallback{
         override fun onAvailabilityChanged(dataType: DataType<*, *>, availability: Availability) {
             Log.d("ExerciseUpdateCallback", "Availability Changed")
         }
+
 
         override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
             /*
             update
              */
 
+
             val exerciseStateInfo = update.exerciseStateInfo
             val latestMetrics = update.latestMetrics
+
+            if (exerciseStateInfo.state == ExerciseState.ACTIVE) ongoing.value = true
+            else ongoing.value = false
 
 
             printEnded(exerciseStateInfo.state.isEnded,exerciseStateInfo.endReason)
@@ -94,13 +131,16 @@ class ExerciseClientRepository @Inject constructor(
                 _heartRate.value = latestMetrics.getData(DataType.HEART_RATE_BPM).last().value
                 Log.d("Heart rate value",_heartRate.value.toString())
 
+                for (element in  latestMetrics.getData(DataType.HEART_RATE_BPM)){
+                    BPMList.add(element.value.toInt())
+                }
+
                 if (exerciseStateInfo.state == ExerciseState.PREPARING){
                     println("PREPARING")
 
                     if (_heartRate.value == 0.0)_sensorState.value = false
                     else _sensorState.value = true
                 }
-
             }
             /* CALORIES */
             if (latestMetrics.getData(DataType.CALORIES_TOTAL)?.total != null){
@@ -108,10 +148,11 @@ class ExerciseClientRepository @Inject constructor(
             }
             //speed,location,steps
 
-
-
             if (latestMetrics.getData(DataType.LOCATION).isNotEmpty()){
                 Log.d("LOCATION", latestMetrics.getData(DataType.LOCATION)[0].value.toString())
+                for (element in latestMetrics.getData(DataType.LOCATION)){
+                    locationList.add(element.value)
+                }
                 //ovo za rutu
             }
 
@@ -198,6 +239,31 @@ class ExerciseClientRepository @Inject constructor(
     }
 
 
+
+
+    fun sendToHandheld(){
+        /*
+        salji listu BPM, listu lokacija, totalCals, totalDistance
+         */
+
+
+
+        val dataMapRequest = PutDataMapRequest.create("/heartrate/${Instant.now().epochSecond}").apply{
+            dataMap.putByteArray("heartrate",Json.encodeToString(BPMList).toByteArray())
+            BPMList = mutableListOf()
+        }
+        val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
+        dataClient.putDataItem(putDataRequest)
+        .addOnSuccessListener { dataItem->
+            Log.d("DataClient", "DataItem saved: $dataItem")
+        }
+        .addOnFailureListener { exception->
+            Log.d("DataClient","Failed to send: $exception")
+        }
+
+
+
+    }
 
 
 }

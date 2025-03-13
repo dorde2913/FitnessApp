@@ -16,7 +16,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.fitnessapp"
+        applicationId = "com.example.jimapp"
         minSdk = 30
         targetSdk = 35
         versionCode = 1

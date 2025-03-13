@@ -7,7 +7,6 @@ package com.example.fitnessapp.presentation
 
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -30,10 +29,7 @@ import androidx.compose.runtime.setValue
 
 import androidx.compose.ui.Modifier
 
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-
-import androidx.compose.ui.tooling.preview.Preview
 
 import androidx.health.services.client.HealthServices
 import androidx.health.services.client.HealthServicesClient
@@ -56,7 +52,6 @@ import androidx.wear.compose.material.PositionIndicator
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Vignette
 import androidx.wear.compose.material.VignettePosition
-import androidx.wear.tooling.preview.devices.WearDevices
 import com.example.fitnessapp.presentation.screens.DailyActivityScreen
 import com.example.fitnessapp.presentation.screens.DestinationDaily
 import com.example.fitnessapp.presentation.screens.DestinationGoals
@@ -75,7 +70,6 @@ import com.example.fitnessapp.presentation.screens.WorkoutComposables.WorkoutOve
 import com.example.fitnessapp.presentation.screens.WorkoutComposables.WorkoutScreen
 import com.example.fitnessapp.presentation.stateholders.WorkoutViewModel
 import com.example.fitnessapp.presentation.theme.FitnessAppTheme
-import com.example.fitnessapp.services.FitService
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

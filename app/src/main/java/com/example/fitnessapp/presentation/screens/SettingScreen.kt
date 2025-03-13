@@ -1,7 +1,6 @@
 package com.example.fitnessapp.presentation.screens
 
 import android.content.Context
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,9 +10,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
-import androidx.wear.compose.material.SelectableChip
 import androidx.wear.compose.material.ToggleChip
 
 @Composable

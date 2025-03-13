@@ -6,9 +6,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.fitnessapp.database.entities.ColorTypeConverters
 import com.example.fitnessapp.database.entities.Workout
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import kotlinx.coroutines.CoroutineScope

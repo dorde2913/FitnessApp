@@ -12,8 +12,6 @@ import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.ChipDefaults
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
-import com.example.fitnessapp.R
-import com.example.fitnessapp.presentation.screens.DestinationWorkout
 
 @Composable
 fun FitnessCard(modifier: Modifier = Modifier,label: String, onClick: (String)->Unit, image: Int, route: String){

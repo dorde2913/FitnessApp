@@ -8,7 +8,6 @@ import androidx.health.services.client.PassiveMonitoringClient
 import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.PassiveListenerConfig
-import androidx.health.services.client.setPassiveListenerService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 

@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -74,6 +75,11 @@ class WorkoutViewModel @Inject constructor(
     val cardioWorkouts = workoutRepository.cardioWorkouts
 
     val sensorsReady = exerciseClientRepository.sensorState
+
+
+    val exerciseRunning = exerciseClientRepository.isOngoing
+
+
 
     fun setOngoing(){
         savedStateHandle[KEY] = _uiState.value.copy(
@@ -209,6 +215,9 @@ class WorkoutViewModel @Inject constructor(
 
     fun finishExercise(){
         //ovde treba uzeti i podatke za overview
+
+        //exerciseClientRepository.endExercise()
+
         savedStateHandle[KEY] = _uiState.value.copy(
             workoutLength = _elapsedTime.value,
             totalCals = totalCals.value,
@@ -223,6 +232,8 @@ class WorkoutViewModel @Inject constructor(
                 )
             }
         )
+
+
     }
 
 

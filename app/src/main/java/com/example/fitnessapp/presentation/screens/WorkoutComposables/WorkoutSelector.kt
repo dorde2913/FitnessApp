@@ -62,8 +62,13 @@ fun WorkoutSelector(type: WorkoutType, viewModel: WorkoutViewModel, navigateToOn
 
     val sensorsReady by viewModel.sensorsReady.collectAsState()
 
+    val running = viewModel.exerciseRunning.collectAsState().value
     LaunchedEffect(Unit) {
         //viewModel.finishExercise()
+//        if (running) {
+//            viewModel.finishExercise()
+//        }
+
         viewModel.prepareExercise()
     }
 

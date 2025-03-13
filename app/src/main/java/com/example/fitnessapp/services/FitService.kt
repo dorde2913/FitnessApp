@@ -8,7 +8,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.PowerManager
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -17,6 +16,7 @@ import androidx.lifecycle.coroutineScope
 import com.example.fitnessapp.R
 import com.example.fitnessapp.presentation.MainActivity
 import com.example.fitnessapp.repositories.ExerciseClientRepository
+import com.example.fitnessapp.sendMessageToPhone
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
@@ -53,9 +53,9 @@ class FitService @Inject constructor()
         lifecycle.coroutineScope.launch {
             while(true){
                 Log.d(className,"buh!")
-                delay(1000)
+                exerciseClientRepository.sendToHandheld()
+                delay(1000 * 60 )//3 minutes
             }
-
         }
 
         return super.onStartCommand(intent, flags, startId)
