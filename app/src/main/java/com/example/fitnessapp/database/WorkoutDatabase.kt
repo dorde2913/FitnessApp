@@ -7,12 +7,14 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.fitnessapp.database.entities.HeartRate
+
 import com.example.fitnessapp.database.entities.Workout
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@Database(entities = arrayOf(Workout::class), version = 1, exportSchema = false)
+@Database(entities = arrayOf(Workout::class,HeartRate::class), version = 1, exportSchema = false)
 abstract class WorkoutDatabase : RoomDatabase() {
     abstract fun workoutDao(): WorkoutDao
 
@@ -24,7 +26,7 @@ abstract class WorkoutDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     WorkoutDatabase::class.java,
-                    "workouts4"
+                    "workouts"
                 ).addCallback(WordDatabaseCallback(scope)).build()
                 INSTANCE = instance
                 // return instance
@@ -60,6 +62,13 @@ abstract class WorkoutDatabase : RoomDatabase() {
                 , workoutType = WorkoutType.CARDIO))
             workoutDao.insert(Workout(label = "Cycling", color = Color.Blue.toArgb()
                 , workoutType = WorkoutType.CARDIO))
+
+
+            for (i in 0 until 24){
+                workoutDao.insert(HeartRate(hour = i , value = 0))
+            }
+
+            //workoutDao.insert(PassiveStats())
 
         }
     }

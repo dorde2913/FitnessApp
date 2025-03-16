@@ -4,14 +4,21 @@ import android.content.Context
 import android.content.Intent
 import android.os.Parcelable
 import android.util.Log
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.fitnessapp.presentation.AVG_LEN
+import com.example.fitnessapp.presentation.DAILY_LEN
+import com.example.fitnessapp.presentation.NUM_WORKOUTS
+import com.example.fitnessapp.presentation.dataStore
 import com.example.fitnessapp.repositories.ExerciseClientRepository
 import com.example.fitnessapp.repositories.WorkoutRepository
 import com.example.fitnessapp.services.FitService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -131,7 +138,6 @@ class WorkoutViewModel @Inject constructor(
 
 
 
-
     /*
     ovde imamo stopericu i uzimanje podataka preko ExerciseClient
      */
@@ -165,7 +171,7 @@ class WorkoutViewModel @Inject constructor(
             .onEach {timeDiff ->
                 _elapsedTime.update { it + timeDiff }
             }
-            .launchIn(viewModelScope)
+            .launchIn(CoroutineScope(Dispatchers.Default))
     }
 
     private fun getTimerFlow(isRunning: Boolean): Flow<Long> {
@@ -218,6 +224,26 @@ class WorkoutViewModel @Inject constructor(
 
         //exerciseClientRepository.endExercise()
 
+        viewModelScope.launch {
+            context.dataStore.edit { preferences ->
+                if (preferences[DAILY_LEN] == null) preferences[DAILY_LEN] = _uiState.value.workoutLength
+                else preferences[DAILY_LEN] =
+                    _uiState.value.workoutLength + preferences[DAILY_LEN]!!
+
+                if (preferences[NUM_WORKOUTS] == null) preferences[NUM_WORKOUTS] = 1
+                else preferences[NUM_WORKOUTS] = preferences[NUM_WORKOUTS]!! + 1
+
+                if (preferences[AVG_LEN] == null) preferences[AVG_LEN] = _uiState.value.workoutLength
+                else {
+                    preferences[AVG_LEN] =
+                        (preferences[AVG_LEN]!! * (preferences[NUM_WORKOUTS]!! - 1)
+                        + _uiState.value.workoutLength) / preferences[NUM_WORKOUTS]!!
+                }
+            }
+        }
+
+
+
         savedStateHandle[KEY] = _uiState.value.copy(
             workoutLength = _elapsedTime.value,
             totalCals = totalCals.value,
@@ -236,6 +262,12 @@ class WorkoutViewModel @Inject constructor(
 
     }
 
+
+    fun pauseExercise() =
+            exerciseClientRepository.pauseExercise()
+
+    fun resumeExercise() =
+        exerciseClientRepository.unpauseExercise()
 
 
 }

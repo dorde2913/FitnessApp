@@ -69,7 +69,7 @@ fun OngoingWorkout(viewModel: WorkoutViewModel, navigateToOverview: ()->Unit){
     val distance by viewModel.distance.collectAsState()
 
     val uiState by viewModel.uiState.collectAsState()
-    val timerState by viewModel.timerState.collectAsState()
+    //val timerState by viewModel.timerState.collectAsState()
 
     val workout by viewModel.getWorkoutByLabel(uiState.workoutLabel).collectAsStateWithLifecycle(initialValue = Workout())
     //if (workout!=null)
@@ -170,7 +170,8 @@ fun OngoingExerciseOverlay(viewModel: WorkoutViewModel, navigateToOverview: () -
                     onClick = {
                         //pause/unpause workout
                         viewModel.toggleIsRunning()
-
+                        if (timerState == TimerState.RUNNING) viewModel.pauseExercise()
+                        else viewModel.resumeExercise()
                     },
                     modifier = Modifier.clip(CircleShape).background(if (timerState == TimerState.RUNNING)Color.Gray else Color.Green.darken(0.5f))
                 ) {

@@ -2,6 +2,7 @@ package com.example.fitnessapp.services
 
 import android.annotation.SuppressLint
 import android.app.Notification
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -47,13 +48,18 @@ class FitService @Inject constructor()
         Log.d(className, "onStartCommand()")
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, getNotification())
+        //val notificationManager = context.getSystemService(NotificationManager::class.java)
+        //notificationManager.notify(NOTIFICATION_ID,getNotification())
 
         exerciseClientRepository.startExercise()
 
         lifecycle.coroutineScope.launch {
             while(true){
                 Log.d(className,"buh!")
-                exerciseClientRepository.sendToHandheld()
+                exerciseClientRepository.sendHRToHandheld()
+                exerciseClientRepository.sendCalories()
+                exerciseClientRepository.sendDistance()
+
                 delay(1000 * 60 )//3 minutes
             }
         }

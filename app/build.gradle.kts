@@ -31,6 +31,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -105,5 +106,7 @@ dependencies {
     implementation(libs.vico.compose)
     implementation(libs.vico.compose.m2)
     implementation(libs.vico.compose.m3)
+
+    implementation(libs.datastore.preferences)
 
 }

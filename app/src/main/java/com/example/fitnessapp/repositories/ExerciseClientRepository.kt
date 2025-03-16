@@ -11,13 +11,16 @@ import androidx.health.services.client.data.ExerciseConfig
 import androidx.health.services.client.data.ExerciseEndReason
 import androidx.health.services.client.data.ExerciseLapSummary
 import androidx.health.services.client.data.ExerciseState
+import androidx.health.services.client.data.ExerciseTrackedStatus
 import androidx.health.services.client.data.ExerciseType
 import androidx.health.services.client.data.ExerciseUpdate
 import androidx.health.services.client.data.LocationData
 import androidx.health.services.client.data.WarmUpConfig
 import androidx.health.services.client.endExercise
 import androidx.health.services.client.getCurrentExerciseInfo
+import androidx.health.services.client.pauseExercise
 import androidx.health.services.client.prepareExercise
+import androidx.health.services.client.resumeExercise
 import androidx.health.services.client.startExercise
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import com.google.android.gms.wearable.DataEvent
@@ -102,6 +105,8 @@ class ExerciseClientRepository @Inject constructor(
 
     var BPMList: MutableList<Int> = mutableListOf()
     var locationList: MutableList<LocationData> = mutableListOf()
+
+
     //za kalorije i distancu ne mora lista uopste
 
 
@@ -115,10 +120,10 @@ class ExerciseClientRepository @Inject constructor(
             /*
             update
              */
-
-
             val exerciseStateInfo = update.exerciseStateInfo
             val latestMetrics = update.latestMetrics
+
+            if (exerciseStateInfo.state == ExerciseState.USER_PAUSED) return
 
             if (exerciseStateInfo.state == ExerciseState.ACTIVE) ongoing.value = true
             else ongoing.value = false
@@ -182,10 +187,24 @@ class ExerciseClientRepository @Inject constructor(
 
     }
 
+    fun pauseExercise(){
+        CoroutineScope(Dispatchers.Default).launch {
+            exerciseClient.pauseExercise()
+        }
+    }
+    fun unpauseExercise(){
+        CoroutineScope(Dispatchers.Default).launch {
+            exerciseClient.resumeExercise()
+        }
+    }
 
     fun prepareExercise(){
+
         CoroutineScope(Dispatchers.Default).launch {
             exerciseClient.setUpdateCallback(callback)
+            if (exerciseClient.getCurrentExerciseInfo().exerciseTrackedStatus != ExerciseTrackedStatus.NO_EXERCISE_IN_PROGRESS){
+                exerciseClient.endExercise()
+            }
             exerciseClient.prepareExercise(
                 WarmUpConfig(ExerciseType.RUNNING, dataTypes = setOf(
                     DataType.HEART_RATE_BPM,
@@ -196,12 +215,12 @@ class ExerciseClientRepository @Inject constructor(
                 ))
             )
 
+
         }
     }
 
     fun startExercise(){
         Log.d("EXERCISE START","TYPE: $currentType")
-
         if (currentType == WorkoutType.GYM){
             dataTypes = setOf(
                 DataType.HEART_RATE_BPM,
@@ -214,7 +233,7 @@ class ExerciseClientRepository @Inject constructor(
                 DataType.CALORIES_TOTAL,
                 DataType.LOCATION,
                 DataType.DISTANCE_TOTAL,
-                DataType.SPEED
+                DataType.SPEED,
             )
         }
 
@@ -241,12 +260,10 @@ class ExerciseClientRepository @Inject constructor(
 
 
 
-    fun sendToHandheld(){
+    fun sendHRToHandheld(){
         /*
         salji listu BPM, listu lokacija, totalCals, totalDistance
          */
-
-
 
         val dataMapRequest = PutDataMapRequest.create("/heartrate/${Instant.now().epochSecond}").apply{
             dataMap.putByteArray("heartrate",Json.encodeToString(BPMList).toByteArray())
@@ -261,16 +278,56 @@ class ExerciseClientRepository @Inject constructor(
             Log.d("DataClient","Failed to send: $exception")
         }
 
+    }
+    fun sendLocationToHandheld(){
+        val dataMapRequest = PutDataMapRequest.create("/location/${Instant.now().epochSecond}").apply{
+            dataMap.putByteArray("location",Json.encodeToString(locationList).toByteArray())
+            locationList = mutableListOf()
+        }
+        val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
+        dataClient.putDataItem(putDataRequest)
+            .addOnSuccessListener { dataItem->
+                Log.d("DataClient", "DataItem saved: $dataItem")
+            }
+            .addOnFailureListener { exception->
+                Log.d("DataClient","Failed to send: $exception")
+            }
+    }
 
+    fun sendDistance(){
+        val dataMapRequest = PutDataMapRequest.create("/distance").apply{
+            dataMap.putInt("distance",_distance.value.toInt())
+        }
+        val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
+        dataClient.putDataItem(putDataRequest)
+            .addOnSuccessListener { dataItem->
+                Log.d("DataClient", "DataItem saved: $dataItem")
+            }
+            .addOnFailureListener { exception->
+                Log.d("DataClient","Failed to send: $exception")
+            }
+    }
 
+    fun sendCalories(){
+        val dataMapRequest = PutDataMapRequest.create("/calories").apply{
+            dataMap.putInt("calories",_calories.value.toInt())
+        }
+        val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
+        dataClient.putDataItem(putDataRequest)
+            .addOnSuccessListener { dataItem->
+                Log.d("DataClient", "DataItem saved: $dataItem")
+            }
+            .addOnFailureListener { exception->
+                Log.d("DataClient","Failed to send: $exception")
+            }
     }
 
 
 }
 
 fun printEnded(ended: Boolean, reason: Int){
-    Log.d("Exercise Update","Exercise ended: $ended")
     if (ended){
+        Log.d("Exercise Update","Exercise ended: $ended")
         println("REASON :")
         println(
             when(reason){

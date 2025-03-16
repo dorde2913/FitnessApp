@@ -22,14 +22,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 
 import androidx.compose.ui.platform.LocalView
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 
 import androidx.health.services.client.HealthServices
 import androidx.health.services.client.HealthServicesClient
@@ -68,9 +76,20 @@ import com.example.fitnessapp.presentation.screens.SettingScreen
 import com.example.fitnessapp.presentation.screens.WorkoutComposables.OngoingWorkout
 import com.example.fitnessapp.presentation.screens.WorkoutComposables.WorkoutOverview
 import com.example.fitnessapp.presentation.screens.WorkoutComposables.WorkoutScreen
+import com.example.fitnessapp.presentation.stateholders.PassiveViewModel
 import com.example.fitnessapp.presentation.stateholders.WorkoutViewModel
 import com.example.fitnessapp.presentation.theme.FitnessAppTheme
+import com.example.fitnessapp.repositories.PassiveMonitoringRepository
 import dagger.hilt.android.AndroidEntryPoint
+
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "passive_stats")
+val MIN_KEY = intPreferencesKey("daily_min")
+val MAX_KEY = intPreferencesKey("daily_max")
+val DAILY_LEN = longPreferencesKey("daily_len")
+
+val AVG_LEN = longPreferencesKey("avg_len")
+val NUM_WORKOUTS = longPreferencesKey("num_workouts")
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -83,6 +102,7 @@ class MainActivity : ComponentActivity() {
         setTheme(android.R.style.Theme_DeviceDefault)
 
 
+
         setContent {
             WearApp(this)
         }
@@ -91,6 +111,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun WearApp(context: Context) {
+
+
+
 
     var checked by rememberSaveable { mutableStateOf(
         context.getSharedPreferences("screenAlwaysOn", Context.MODE_PRIVATE).getBoolean("screenAlwaysOn",false)
@@ -102,12 +125,18 @@ fun WearApp(context: Context) {
 
     val view = LocalView.current
     DisposableEffect(checked) {
+
         view.keepScreenOn = checked
         onDispose {}
+
     }
 
 
     val workoutViewModel: WorkoutViewModel = viewModel()
+    val passiveViewModel: PassiveViewModel = viewModel()
+
+    LaunchedEffect(Unit) { passiveViewModel.subscribe() }
+
     //val view = LocalView.current
    //view.keepScreenOn = true
 
@@ -118,41 +147,11 @@ fun WearApp(context: Context) {
     }
 
 
-    val healthClient: HealthServicesClient = HealthServices.getClient(context)
-    val passiveMonitoringClient: PassiveMonitoringClient = healthClient.passiveMonitoringClient
 
     var steps by rememberSaveable { mutableStateOf(0) }
 
-    val dailyStepsGoal by lazy {
-        val condition = DataTypeCondition(
-            dataType = DataType.STEPS_DAILY,
-            threshold = 1_000, // Trigger every 10000 steps
-            comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
-        )
-        PassiveGoal(condition)
-    }
 
-    passiveMonitoringClient.setPassiveListenerCallback(
-        PassiveListenerConfig.builder()
-            .setDataTypes(setOf(DataType.STEPS, DataType.HEART_RATE_BPM))
-            .setDailyGoals(setOf(dailyStepsGoal))
-            .build()
-        ,
-        object: PassiveListenerCallback {
 
-            override fun onNewDataPointsReceived(dataPoints: DataPointContainer) {
-                super.onNewDataPointsReceived(dataPoints)
-                println("BUH BUH NEW DATA BUH BUH")
-
-                for (dataPoint in dataPoints.getData(DataType.STEPS)){
-                    steps = dataPoint.value.toInt()
-                    println("STEPS: ${dataPoint.value}")
-                }
-                for (dataPoint in dataPoints.getData(DataType.HEART_RATE_BPM)){
-                    println("STEPS: ${dataPoint.value}")
-                }
-            }
-    })
 
     val navController = rememberNavController()
 
@@ -201,7 +200,7 @@ fun WearApp(context: Context) {
                     HomeScreen(onChipClick = {route -> navController.navigate(route)}, listState = listState)
                 }
                 composable(route = DestinationDaily.route){
-                   DailyActivityScreen()
+                   DailyActivityScreen(viewModel = passiveViewModel)
                 }
                 composable(route = DestinationGoals.route){
                     FitnessGoalScreen()
@@ -211,7 +210,7 @@ fun WearApp(context: Context) {
                         DestinationWorkoutOngoing.route)})
                 }
                 composable(route = DestinationHealth.route){
-                    HealthScreen()
+                    HealthScreen(viewModel = passiveViewModel)
                 }
                 composable(route = DestinationSettings.route){
                     SettingScreen(context=context)
