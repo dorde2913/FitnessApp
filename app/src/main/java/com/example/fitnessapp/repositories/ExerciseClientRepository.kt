@@ -78,6 +78,11 @@ class ExerciseClientRepository @Inject constructor(
     val ongoing = MutableStateFlow(false)
     val isOngoing = ongoing.asStateFlow()
 
+
+    val _avgBPM = MutableStateFlow(0.0)
+    val averageBPM = _avgBPM.asStateFlow()
+    var bpm_counter = 0
+
     init{
         dataClient.addListener{dataEvents ->
             println("DATA CHANGED")
@@ -138,6 +143,9 @@ class ExerciseClientRepository @Inject constructor(
 
                 for (element in  latestMetrics.getData(DataType.HEART_RATE_BPM)){
                     BPMList.add(element.value.toInt())
+                    bpm_counter++
+                    _avgBPM.value = (_avgBPM.value * (bpm_counter-1) +
+                        element.value.toInt() ) / bpm_counter
                 }
 
                 if (exerciseStateInfo.state == ExerciseState.PREPARING){
@@ -220,6 +228,7 @@ class ExerciseClientRepository @Inject constructor(
     }
 
     fun startExercise(){
+        bpm_counter = 0
         Log.d("EXERCISE START","TYPE: $currentType")
         if (currentType == WorkoutType.GYM){
             dataTypes = setOf(

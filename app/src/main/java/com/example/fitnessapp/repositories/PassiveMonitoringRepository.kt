@@ -27,8 +27,8 @@ class PassiveMonitoringRepository @Inject constructor(
     val healthClient: HealthServicesClient = HealthServices.getClient(context)
     val passiveMonitoringClient: PassiveMonitoringClient = healthClient.passiveMonitoringClient
 
-    fun resetDailyBPM(){
-        dao.resetDailyBPM()
+    suspend fun resetDailyBPM(hour: Int){
+        dao.resetDailyBPM(hour)
     }
 
 

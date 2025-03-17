@@ -8,6 +8,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.fitnessapp.presentation.AVG_BPM
+import com.example.fitnessapp.presentation.AVG_CAL
 import com.example.fitnessapp.presentation.AVG_LEN
 import com.example.fitnessapp.presentation.DAILY_LEN
 import com.example.fitnessapp.presentation.NUM_WORKOUTS
@@ -147,6 +149,8 @@ class WorkoutViewModel @Inject constructor(
     val distance = exerciseClientRepository.totalDistance
     val speed = exerciseClientRepository.currentSpeed
 
+    val _averageBPM = exerciseClientRepository.averageBPM
+
     //stoperica
     private val _elapsedTime = MutableStateFlow(0L)
     private val _timerState = MutableStateFlow(TimerState.RESET)
@@ -224,6 +228,13 @@ class WorkoutViewModel @Inject constructor(
 
         //exerciseClientRepository.endExercise()
 
+        savedStateHandle[KEY] = _uiState.value.copy(
+            workoutLength = _elapsedTime.value,
+            totalCals = totalCals.value,
+            distance = distance.value,
+            averageBPM = _averageBPM.value
+        )
+
         viewModelScope.launch {
             context.dataStore.edit { preferences ->
                 if (preferences[DAILY_LEN] == null) preferences[DAILY_LEN] = _uiState.value.workoutLength
@@ -239,16 +250,26 @@ class WorkoutViewModel @Inject constructor(
                         (preferences[AVG_LEN]!! * (preferences[NUM_WORKOUTS]!! - 1)
                         + _uiState.value.workoutLength) / preferences[NUM_WORKOUTS]!!
                 }
+
+                if (preferences[AVG_BPM] == null) preferences[AVG_BPM] = _uiState.value.averageBPM.toLong()
+                else {
+                    preferences[AVG_BPM] =
+                        (preferences[AVG_BPM]!! * (preferences[NUM_WORKOUTS]!! - 1)
+                                + _uiState.value.averageBPM.toLong()) / preferences[NUM_WORKOUTS]!!
+                }
+
+                if (preferences[AVG_CAL] == null) preferences[AVG_CAL] = _uiState.value.totalCals.toLong()
+                else {
+                    preferences[AVG_CAL] =
+                        (preferences[AVG_CAL]!! * (preferences[NUM_WORKOUTS]!! -1)
+                            + _uiState.value.totalCals.toLong()) / preferences[NUM_WORKOUTS]!!
+                }
             }
         }
 
 
 
-        savedStateHandle[KEY] = _uiState.value.copy(
-            workoutLength = _elapsedTime.value,
-            totalCals = totalCals.value,
-            distance = distance.value
-        )
+
 
         context.stopService(
             Intent().apply {

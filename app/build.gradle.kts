@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.work.runtime.ktx)
     implementation(libs.hilt.common)
+    implementation(libs.hilt.work)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
     debugImplementation(libs.ui.tooling)

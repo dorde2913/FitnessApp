@@ -60,7 +60,12 @@ import androidx.wear.compose.material.PositionIndicator
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Vignette
 import androidx.wear.compose.material.VignettePosition
+import androidx.wear.compose.material.dialog.Confirmation
+import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.fitnessapp.presentation.screens.DailyActivityScreen
@@ -85,6 +90,8 @@ import com.example.fitnessapp.presentation.theme.FitnessAppTheme
 import com.example.fitnessapp.repositories.PassiveMonitoringRepository
 import com.example.fitnessapp.workers.DailyWorker
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.Instant
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
@@ -94,6 +101,8 @@ val MAX_KEY = intPreferencesKey("daily_max")
 val DAILY_LEN = longPreferencesKey("daily_len")
 
 val AVG_LEN = longPreferencesKey("avg_len")
+val AVG_BPM = longPreferencesKey("avg_bpm")
+val AVG_CAL = longPreferencesKey("avg_cal")
 val NUM_WORKOUTS = longPreferencesKey("num_workouts")
 
 
@@ -120,11 +129,17 @@ fun scheduleWork(context: Context){
         .setInitialDelay(initialDelay,TimeUnit.MILLISECONDS)
         .build()
 
-    WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+//    val dailyWorkRequest = OneTimeWorkRequestBuilder<DailyWorker>()
+//        .build()
+
+    val operation = WorkManager.getInstance(context).enqueueUniquePeriodicWork(
         "DailyWorker",
         ExistingPeriodicWorkPolicy.UPDATE,
         dailyWorkRequest
     )
+
+
+    println("SCHEDULED  ${operation.state.value}")
 }
 
 @AndroidEntryPoint
@@ -133,11 +148,13 @@ class MainActivity : ComponentActivity() {
         println("ONCREATE")
         installSplashScreen()
 
+
+
         super.onCreate(savedInstanceState)
 
         setTheme(android.R.style.Theme_DeviceDefault)
 
-        scheduleWork(this)
+
 
         setContent {
             WearApp(this)
@@ -147,8 +164,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun WearApp(context: Context) {
-
-
 
 
     var checked by rememberSaveable { mutableStateOf(
@@ -171,7 +186,14 @@ fun WearApp(context: Context) {
     val workoutViewModel: WorkoutViewModel = viewModel()
     val passiveViewModel: PassiveViewModel = viewModel()
 
-    LaunchedEffect(Unit) { passiveViewModel.subscribe() }
+    val hour = Instant.ofEpochSecond(Instant.now().epochSecond).atZone(
+        ZoneId.systemDefault()).hour
+
+    LaunchedEffect(Unit) {
+        passiveViewModel.subscribe()
+        scheduleWork(context)
+        passiveViewModel.clearHRMaxes(hour)
+    }
 
     //val view = LocalView.current
    //view.keepScreenOn = true

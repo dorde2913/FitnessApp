@@ -13,24 +13,27 @@ import com.example.fitnessapp.repositories.PassiveMonitoringRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.AndroidEntryPoint
+import java.lang.Thread.sleep
 import javax.inject.Inject
 
 @HiltWorker
 class DailyWorker @AssistedInject constructor(
     @Assisted val context: Context,
     @Assisted val workerParams: WorkerParameters,
-    val passiveMonitoringRepository: PassiveMonitoringRepository
 ): CoroutineWorker(context, workerParams){
+
+
 
     override suspend fun doWork(): Result {
         //ovde cemo da resetujemo sve vrednosti
+
+        println("WORKER WORKIN")
 
         context.dataStore.edit { preferences->
             preferences[MAX_KEY] = 0
             preferences[MIN_KEY] = 0
             preferences[DAILY_LEN] = 0
 
-            passiveMonitoringRepository.resetDailyBPM()
         }
 
 

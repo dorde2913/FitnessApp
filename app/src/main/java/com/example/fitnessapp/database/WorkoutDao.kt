@@ -35,8 +35,8 @@ interface WorkoutDao {
     @Query("SELECT * FROM Heartrate ORDER BY hour")
     fun getHRMaxes(): Flow<List<HeartRate>>
 
-    @Query("UPDATE Heartrate SET value = 0")
-    fun resetDailyBPM()
+    @Query("UPDATE Heartrate SET value = 0 WHERE hour > :hour")
+    suspend fun resetDailyBPM(hour: Int)
 
 //    @Query("UPDATE PassiveStats SET minHR = :value")
 //    fun setMinHR(value: Int)
