@@ -69,6 +69,8 @@ dependencies {
     implementation(libs.material3.android)
     implementation(libs.wear.ongoing)
     implementation(libs.compose.material3)
+    implementation(libs.work.runtime.ktx)
+    implementation(libs.hilt.common)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
     debugImplementation(libs.ui.tooling)

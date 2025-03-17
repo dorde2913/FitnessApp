@@ -8,24 +8,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.health.services.client.HealthServices
-import androidx.health.services.client.HealthServicesClient
-import androidx.health.services.client.PassiveListenerCallback
-import androidx.health.services.client.PassiveMonitoringClient
-import androidx.health.services.client.data.ComparisonType
-import androidx.health.services.client.data.DataPointContainer
-import androidx.health.services.client.data.DataType
-import androidx.health.services.client.data.DataTypeCondition
-import androidx.health.services.client.data.PassiveGoal
-import androidx.health.services.client.data.PassiveListenerConfig
+
 import androidx.wear.compose.foundation.pager.VerticalPager
 import androidx.wear.compose.foundation.pager.rememberPagerState
 import androidx.wear.compose.material.Chip
@@ -85,7 +74,7 @@ fun DailyActivityScreen(modifier: Modifier = Modifier, viewModel: PassiveViewMod
 fun DailyActivityChip(label: String,iconResource: Int){
     Chip(
         onClick = {
-            //posalji intent na fon
+
         },
         label = {Text(label, color = MaterialTheme.colorScheme.onSurface)},
         modifier = Modifier.padding(vertical = 5.dp).height(30.dp),

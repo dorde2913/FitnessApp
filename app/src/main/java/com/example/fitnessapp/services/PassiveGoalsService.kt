@@ -12,8 +12,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.health.services.client.PassiveListenerService
 import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
-import androidx.health.services.client.data.PassiveGoal
-import com.example.fitnessapp.presentation.DAILY_LEN
+
 import com.example.fitnessapp.presentation.MAX_KEY
 import com.example.fitnessapp.presentation.MIN_KEY
 import com.example.fitnessapp.presentation.dataStore
@@ -74,17 +73,7 @@ class PassiveGoalsService : PassiveListenerService(){
 
 
                 println("HOUR: $hour")
-                if (hour == 0 && flag){
-                    //reset svega
-                    flag = false
-                    repository.resetDailyBPM()
-                    this@PassiveGoalsService.dataStore.edit { preferences->
-                        preferences[MIN_KEY] = 0
-                        preferences[MAX_KEY] = 0
-                        preferences[DAILY_LEN] = 0
-                    }
-                }
-                else if (hour!=0) flag = true
+
 
 
                 val max = repository.getMaxHR(hour)
@@ -93,14 +82,7 @@ class PassiveGoalsService : PassiveListenerService(){
                     if (preferences[MIN_KEY] == null){
                         preferences[MIN_KEY] = heartrate
                     }
-                    else if (heartrate < preferences[MIN_KEY]!! || preferences[MIN_KEY] == 0){
-                        preferences[MIN_KEY] = heartrate
-                    }
-
                     if (preferences[MAX_KEY] == null){
-                        preferences[MAX_KEY] = heartrate
-                    }
-                    else if (heartrate > preferences[MAX_KEY]!!){
                         preferences[MAX_KEY] = heartrate
                     }
                 }

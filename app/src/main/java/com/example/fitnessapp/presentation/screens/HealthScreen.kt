@@ -80,9 +80,6 @@ fun HealthScreen(modifier: Modifier = Modifier, viewModel: PassiveViewModel){
     val healthClient = HealthServices.getClient(LocalContext.current)
     val measureClient = healthClient.measureClient
 
-    val exerciseClient = healthClient.exerciseClient
-
-    val passiveMonitoringClient = healthClient.passiveMonitoringClient
 
     val context = LocalContext.current
     val min by context.dataStore.data
@@ -102,7 +99,8 @@ fun HealthScreen(modifier: Modifier = Modifier, viewModel: PassiveViewModel){
             if (data.getData(DataType.HEART_RATE_BPM).isNotEmpty()){
                 currentHR = data.getData(DataType.HEART_RATE_BPM)[0].value
 
-                if (currentHR < (min ?: 0) || min == 0){
+
+                if ((currentHR < (min ?: 0) && currentHR.toInt() != 0)|| min == 0){
                     CoroutineScope(Dispatchers.Default).launch {
                         context.dataStore.edit { preferences ->
                             preferences[MIN_KEY] = currentHR.toInt()
@@ -110,8 +108,7 @@ fun HealthScreen(modifier: Modifier = Modifier, viewModel: PassiveViewModel){
                     }
                 }
 
-
-                if (currentHR > (max ?: 0)){
+                if (currentHR > max!!){
                     CoroutineScope(Dispatchers.Default).launch {
                         context.dataStore.edit { preferences ->
                             preferences[MAX_KEY] = currentHR.toInt()
@@ -142,21 +139,21 @@ fun HealthScreen(modifier: Modifier = Modifier, viewModel: PassiveViewModel){
         }
     }
 
-    VerticalPager(
-        state = rememberPagerState(pageCount = {2})
-    ) {
-        Box(modifier = Modifier.fillMaxSize()){
-            Box(modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center){
-                Icon(
-                    painter = painterResource(R.drawable.heartrateicon_removebg_preview),
-                    contentDescription = null,
-                    tint = Color.Black.lighten(0.2f)
-                )
-            }
+    Box(modifier = Modifier.fillMaxSize()){
+        Box(modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center){
+            Icon(
+                painter = painterResource(R.drawable.heartrateicon_removebg_preview),
+                contentDescription = null,
+                tint = Color.Black.lighten(0.2f)
+            )
+        }
+        VerticalPager(
+            state = rememberPagerState(pageCount = {2})
+        ) {
 
-            if (it == 0) HeartRateTopScreen(heartRate = currentHR,min = min?:0, max = max?:0)
-            else DailyRanges(viewModel = viewModel)
+                if (it == 0) HeartRateTopScreen(heartRate = currentHR,min = min?:0, max = max?:0)
+                else DailyRanges(viewModel = viewModel)
         }
 
     }

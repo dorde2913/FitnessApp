@@ -60,6 +60,9 @@ import androidx.wear.compose.material.PositionIndicator
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Vignette
 import androidx.wear.compose.material.VignettePosition
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.fitnessapp.presentation.screens.DailyActivityScreen
 import com.example.fitnessapp.presentation.screens.DestinationDaily
 import com.example.fitnessapp.presentation.screens.DestinationGoals
@@ -80,7 +83,10 @@ import com.example.fitnessapp.presentation.stateholders.PassiveViewModel
 import com.example.fitnessapp.presentation.stateholders.WorkoutViewModel
 import com.example.fitnessapp.presentation.theme.FitnessAppTheme
 import com.example.fitnessapp.repositories.PassiveMonitoringRepository
+import com.example.fitnessapp.workers.DailyWorker
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "passive_stats")
 val MIN_KEY = intPreferencesKey("daily_min")
@@ -90,6 +96,36 @@ val DAILY_LEN = longPreferencesKey("daily_len")
 val AVG_LEN = longPreferencesKey("avg_len")
 val NUM_WORKOUTS = longPreferencesKey("num_workouts")
 
+
+
+fun getInitialDelay(): Long{
+    val now = Calendar.getInstance()
+    val nextMidnight = Calendar.getInstance().apply {
+        // Set time to midnight (00:00:00.000)
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+        // If midnight has passed today, schedule for tomorrow
+        if (before(now)) {
+            add(Calendar.DAY_OF_MONTH, 1)
+        }
+    }
+    return nextMidnight.timeInMillis - now.timeInMillis
+}
+
+fun scheduleWork(context: Context){
+    val initialDelay = getInitialDelay()
+    val dailyWorkRequest = PeriodicWorkRequestBuilder<DailyWorker>(1,TimeUnit.DAYS)
+        .setInitialDelay(initialDelay,TimeUnit.MILLISECONDS)
+        .build()
+
+    WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+        "DailyWorker",
+        ExistingPeriodicWorkPolicy.UPDATE,
+        dailyWorkRequest
+    )
+}
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -101,7 +137,7 @@ class MainActivity : ComponentActivity() {
 
         setTheme(android.R.style.Theme_DeviceDefault)
 
-
+        scheduleWork(this)
 
         setContent {
             WearApp(this)
