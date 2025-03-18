@@ -59,6 +59,7 @@ class FitService @Inject constructor()
                 exerciseClientRepository.sendHRToHandheld()
                 exerciseClientRepository.sendCalories()
                 exerciseClientRepository.sendDistance()
+                exerciseClientRepository.sendLocationToHandheld()
 
                 delay(1000 * 60 )//3 minutes
             }

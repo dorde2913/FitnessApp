@@ -2,6 +2,7 @@ package com.example.fitnessapp.repositories
 
 import android.content.Context
 import android.util.Log
+import androidx.datastore.preferences.core.edit
 import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServices
 import androidx.health.services.client.data.Availability
@@ -22,6 +23,9 @@ import androidx.health.services.client.pauseExercise
 import androidx.health.services.client.prepareExercise
 import androidx.health.services.client.resumeExercise
 import androidx.health.services.client.startExercise
+import com.example.fitnessapp.presentation.MAX_KEY
+import com.example.fitnessapp.presentation.MIN_KEY
+import com.example.fitnessapp.presentation.dataStore
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataMapItem
@@ -109,7 +113,7 @@ class ExerciseClientRepository @Inject constructor(
 
 
     var BPMList: MutableList<Int> = mutableListOf()
-    var locationList: MutableList<LocationData> = mutableListOf()
+    var locationList: MutableList<Pair<Double,Double>> = mutableListOf()
 
 
     //za kalorije i distancu ne mora lista uopste
@@ -164,7 +168,7 @@ class ExerciseClientRepository @Inject constructor(
             if (latestMetrics.getData(DataType.LOCATION).isNotEmpty()){
                 Log.d("LOCATION", latestMetrics.getData(DataType.LOCATION)[0].value.toString())
                 for (element in latestMetrics.getData(DataType.LOCATION)){
-                    locationList.add(element.value)
+                    locationList.add(Pair(element.value.altitude,element.value.longitude))
                 }
                 //ovo za rutu
             }
@@ -331,6 +335,36 @@ class ExerciseClientRepository @Inject constructor(
             }
     }
 
+
+
+    fun sendCaloriesDaily(calories: Int){
+
+        val dataMapRequest = PutDataMapRequest.create("/calories_daily").apply{
+            dataMap.putInt("calories_daily",calories)
+        }
+        val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
+        dataClient.putDataItem(putDataRequest)
+            .addOnSuccessListener { dataItem->
+                Log.d("DataClient", "DataItem saved: $dataItem")
+            }
+            .addOnFailureListener { exception->
+                Log.d("DataClient","Failed to send: $exception")
+            }
+    }
+
+    fun sendSteps(steps: Int){
+        val dataMapRequest = PutDataMapRequest.create("/steps_daily").apply{
+            dataMap.putInt("steps_daily",steps)
+        }
+        val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
+        dataClient.putDataItem(putDataRequest)
+            .addOnSuccessListener { dataItem->
+                Log.d("DataClient", "DataItem saved: $dataItem")
+            }
+            .addOnFailureListener { exception->
+                Log.d("DataClient","Failed to send: $exception")
+            }
+    }
 
 }
 

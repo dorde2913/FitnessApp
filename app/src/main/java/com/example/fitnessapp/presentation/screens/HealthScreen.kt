@@ -99,6 +99,21 @@ fun HealthScreen(modifier: Modifier = Modifier, viewModel: PassiveViewModel){
             if (data.getData(DataType.HEART_RATE_BPM).isNotEmpty()){
                 currentHR = data.getData(DataType.HEART_RATE_BPM)[0].value
 
+                viewModel.
+
+                if (max == null) CoroutineScope(Dispatchers.Default).launch {
+                    context.dataStore.edit { preferences ->
+                        preferences[MAX_KEY] = currentHR.toInt()
+                    }
+                }
+
+
+                if (min == null) CoroutineScope(Dispatchers.Default).launch {
+                    context.dataStore.edit { preferences ->
+                        preferences[MIN_KEY] = 0
+                    }
+                }
+
 
                 if ((currentHR < (min ?: 0) && currentHR.toInt() != 0)|| min == 0){
                     CoroutineScope(Dispatchers.Default).launch {
@@ -108,7 +123,8 @@ fun HealthScreen(modifier: Modifier = Modifier, viewModel: PassiveViewModel){
                     }
                 }
 
-                if (currentHR > max!!){
+
+                if (currentHR > (max ?: 0)){
                     CoroutineScope(Dispatchers.Default).launch {
                         context.dataStore.edit { preferences ->
                             preferences[MAX_KEY] = currentHR.toInt()

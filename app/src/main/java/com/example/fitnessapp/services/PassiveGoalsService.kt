@@ -16,6 +16,7 @@ import androidx.health.services.client.data.DataType
 import com.example.fitnessapp.presentation.MAX_KEY
 import com.example.fitnessapp.presentation.MIN_KEY
 import com.example.fitnessapp.presentation.dataStore
+import com.example.fitnessapp.repositories.ExerciseClientRepository
 import com.example.fitnessapp.repositories.PassiveMonitoringRepository
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -32,6 +33,7 @@ import javax.inject.Inject
 class PassiveGoalsService : PassiveListenerService(){
 
     @Inject lateinit var repository: PassiveMonitoringRepository
+    @Inject lateinit var exerciseClientRepository: ExerciseClientRepository
 
     private var flag = false
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -55,11 +57,15 @@ class PassiveGoalsService : PassiveListenerService(){
                 "STEPS: ${dataPoints.getData(DataType.STEPS_DAILY)[0].value}")
             repository._steps.value = dataPoints.getData(DataType.STEPS_DAILY)[0].value.toInt()
             println(repository._steps.value)
+
+            exerciseClientRepository.sendSteps(repository._steps.value)
         }
 
         if (dataPoints.getData(DataType.CALORIES_DAILY).isNotEmpty()){
             repository._calories.value =
                 dataPoints.getData(DataType.CALORIES_DAILY)[0].value.toInt()
+
+            exerciseClientRepository.sendCaloriesDaily(repository._calories.value)
         }
 
         if (dataPoints.getData(DataType.HEART_RATE_BPM).isNotEmpty()){

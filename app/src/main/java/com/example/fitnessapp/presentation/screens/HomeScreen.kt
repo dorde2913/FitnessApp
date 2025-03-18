@@ -1,5 +1,7 @@
 package com.example.fitnessapp.presentation.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,7 +18,11 @@ import androidx.wear.compose.material.Text
 import com.example.fitnessapp.presentation.uiElements.FitnessCard
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, onChipClick: (route: String) -> Unit, listState: ScalingLazyListState){
+fun HomeScreen(modifier: Modifier = Modifier, onChipClick: (route: String) -> Unit,
+               listState: ScalingLazyListState){
+
+
+
     ScalingLazyColumn(
         contentPadding = PaddingValues(
             horizontal = 10.dp,
