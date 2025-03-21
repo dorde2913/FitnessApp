@@ -1,7 +1,4 @@
-package com.example.fitnessapp.database.entities
-
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+package com.example.fitnessapp.data.database.entities
 
 //@Entity(tableName = "PassiveStats")
 //data class PassiveStats(

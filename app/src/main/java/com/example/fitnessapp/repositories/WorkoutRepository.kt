@@ -1,7 +1,7 @@
 package com.example.fitnessapp.repositories
 
-import com.example.fitnessapp.database.WorkoutDao
-import com.example.fitnessapp.database.entities.Workout
+import com.example.fitnessapp.data.database.WorkoutDao
+import com.example.fitnessapp.data.database.entities.Workout
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import javax.inject.Inject
 import javax.inject.Singleton

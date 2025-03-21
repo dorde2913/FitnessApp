@@ -35,7 +35,6 @@ class PassiveGoalsService : PassiveListenerService(){
     @Inject lateinit var repository: PassiveMonitoringRepository
     @Inject lateinit var exerciseClientRepository: ExerciseClientRepository
 
-    private var flag = false
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         CoroutineScope(Dispatchers.Default).launch {

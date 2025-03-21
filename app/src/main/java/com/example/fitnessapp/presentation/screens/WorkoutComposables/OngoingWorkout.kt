@@ -48,7 +48,7 @@ import androidx.wear.compose.material.ChipDefaults
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
 import com.example.fitnessapp.R
-import com.example.fitnessapp.database.entities.Workout
+import com.example.fitnessapp.data.database.entities.Workout
 import com.example.fitnessapp.presentation.stateholders.TimerState
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import com.example.fitnessapp.presentation.stateholders.WorkoutViewModel

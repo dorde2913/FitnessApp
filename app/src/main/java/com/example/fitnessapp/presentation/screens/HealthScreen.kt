@@ -99,7 +99,6 @@ fun HealthScreen(modifier: Modifier = Modifier, viewModel: PassiveViewModel){
             if (data.getData(DataType.HEART_RATE_BPM).isNotEmpty()){
                 currentHR = data.getData(DataType.HEART_RATE_BPM)[0].value
 
-                viewModel.
 
                 if (max == null) CoroutineScope(Dispatchers.Default).launch {
                     context.dataStore.edit { preferences ->

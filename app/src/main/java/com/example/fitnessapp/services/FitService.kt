@@ -16,8 +16,8 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.coroutineScope
 import com.example.fitnessapp.R
 import com.example.fitnessapp.presentation.MainActivity
+import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import com.example.fitnessapp.repositories.ExerciseClientRepository
-import com.example.fitnessapp.sendMessageToPhone
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
@@ -58,8 +58,12 @@ class FitService @Inject constructor()
                 Log.d(className,"buh!")
                 exerciseClientRepository.sendHRToHandheld()
                 exerciseClientRepository.sendCalories()
-                exerciseClientRepository.sendDistance()
-                exerciseClientRepository.sendLocationToHandheld()
+
+                if (exerciseClientRepository.currentType == WorkoutType.CARDIO){
+                    exerciseClientRepository.sendDistance()
+                    exerciseClientRepository.sendLocationToHandheld()
+                }
+
 
                 delay(1000 * 60 )//3 minutes
             }
@@ -77,6 +81,14 @@ class FitService @Inject constructor()
         super.onDestroy()
         Log.d(className, "onDestroy()")
         exerciseClientRepository.endExercise()
+
+        exerciseClientRepository.sendHRToHandheld()
+        exerciseClientRepository.sendCalories()
+
+        if (exerciseClientRepository.currentType == WorkoutType.CARDIO){
+            exerciseClientRepository.sendDistance()
+            exerciseClientRepository.sendLocationToHandheld()
+        }
 
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp:WakeLock")

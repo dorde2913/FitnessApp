@@ -1,4 +1,4 @@
-package com.example.fitnessapp.database
+package com.example.fitnessapp.data.database
 
 import android.content.Context
 import androidx.compose.ui.graphics.Color
@@ -7,9 +7,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.fitnessapp.database.entities.HeartRate
+import com.example.fitnessapp.data.database.entities.HeartRate
 
-import com.example.fitnessapp.database.entities.Workout
+import com.example.fitnessapp.data.database.entities.Workout
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch

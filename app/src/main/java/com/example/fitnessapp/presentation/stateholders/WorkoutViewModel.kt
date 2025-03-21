@@ -174,6 +174,8 @@ class WorkoutViewModel @Inject constructor(
             }
             .onEach {timeDiff ->
                 _elapsedTime.update { it + timeDiff }
+                if (_elapsedTime.value >= 1_000)
+                    exerciseClientRepository.length = _elapsedTime.value
             }
             .launchIn(CoroutineScope(Dispatchers.Default))
     }
@@ -208,6 +210,7 @@ class WorkoutViewModel @Inject constructor(
     fun startExercise() {
         Log.d("EXERCISE START","TYPE: ${uiState.value.type}")
         exerciseClientRepository.currentType = uiState.value.type
+        exerciseClientRepository.currentLabel = uiState.value.workoutLabel
 
         context.startForegroundService(
             Intent().apply {

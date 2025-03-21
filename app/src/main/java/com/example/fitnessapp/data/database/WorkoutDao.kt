@@ -1,12 +1,12 @@
-package com.example.fitnessapp.database
+package com.example.fitnessapp.data.database
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.fitnessapp.database.entities.HeartRate
+import com.example.fitnessapp.data.database.entities.HeartRate
 
-import com.example.fitnessapp.database.entities.Workout
+import com.example.fitnessapp.data.database.entities.Workout
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import kotlinx.coroutines.flow.Flow
 

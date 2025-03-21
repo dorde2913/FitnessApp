@@ -1,17 +1,12 @@
 package com.example.fitnessapp.repositories
 
 import android.content.Context
-import android.content.Intent
-import androidx.compose.runtime.collectAsState
 import androidx.health.services.client.HealthServices
 import androidx.health.services.client.HealthServicesClient
-import androidx.health.services.client.PassiveListenerCallback
 import androidx.health.services.client.PassiveMonitoringClient
-import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.PassiveListenerConfig
-import androidx.health.services.client.setPassiveListenerService
-import com.example.fitnessapp.database.WorkoutDao
+import com.example.fitnessapp.data.database.WorkoutDao
 import com.example.fitnessapp.services.PassiveGoalsService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow

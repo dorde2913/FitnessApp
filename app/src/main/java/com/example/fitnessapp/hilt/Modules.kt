@@ -1,7 +1,7 @@
 package com.example.fitnessapp.hilt
 
 import android.content.Context
-import com.example.fitnessapp.database.WorkoutDatabase
+import com.example.fitnessapp.data.database.WorkoutDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

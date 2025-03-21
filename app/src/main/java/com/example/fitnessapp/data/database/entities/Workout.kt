@@ -1,4 +1,4 @@
-package com.example.fitnessapp.database.entities
+package com.example.fitnessapp.data.database.entities
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb

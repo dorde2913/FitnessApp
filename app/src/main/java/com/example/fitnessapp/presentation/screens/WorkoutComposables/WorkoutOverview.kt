@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fitnessapp.R
-import com.example.fitnessapp.database.entities.Workout
+import com.example.fitnessapp.data.database.entities.Workout
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import com.example.fitnessapp.presentation.stateholders.WorkoutViewModel
 import java.time.LocalTime

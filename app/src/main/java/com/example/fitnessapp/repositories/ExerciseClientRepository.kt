@@ -1,6 +1,7 @@
 package com.example.fitnessapp.repositories
 
 import android.content.Context
+import android.health.connect.datatypes.units.Length
 import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.health.services.client.ExerciseUpdateCallback
@@ -23,6 +24,7 @@ import androidx.health.services.client.pauseExercise
 import androidx.health.services.client.prepareExercise
 import androidx.health.services.client.resumeExercise
 import androidx.health.services.client.startExercise
+import com.example.fitnessapp.data.handheld.HandheldClient
 import com.example.fitnessapp.presentation.MAX_KEY
 import com.example.fitnessapp.presentation.MIN_KEY
 import com.example.fitnessapp.presentation.dataStore
@@ -37,6 +39,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.nio.ByteBuffer
@@ -47,12 +50,13 @@ import javax.inject.Singleton
 
 @Singleton
 class ExerciseClientRepository @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val handheldClient: HandheldClient
 ) {
     private val healthServicesClient = HealthServices.getClient(context)
     private val exerciseClient = healthServicesClient.exerciseClient
 
-    private val dataClient by lazy {Wearable.getDataClient(context)}
+
 
     private var dataTypes = setOf(
         DataType.HEART_RATE_BPM,
@@ -62,7 +66,10 @@ class ExerciseClientRepository @Inject constructor(
         DataType.DISTANCE_TOTAL
     )
 
+    var length = 0L
+
     var currentType = WorkoutType.GYM
+    var currentLabel = ""
 
     val _sensorState = MutableStateFlow(false)
     val sensorState = _sensorState.asStateFlow()
@@ -87,21 +94,6 @@ class ExerciseClientRepository @Inject constructor(
     val averageBPM = _avgBPM.asStateFlow()
     var bpm_counter = 0
 
-    init{
-        dataClient.addListener{dataEvents ->
-            println("DATA CHANGED")
-            dataEvents.forEach { event ->
-                if (event.type == DataEvent.TYPE_DELETED) {
-
-                    val dataItem = event.dataItem
-                    if (dataItem.uri.path?.endsWith("/heartrate") == true) {
-                        //sendToHandheld()
-                    }
-                }
-            }
-
-        }
-    }
 
 
     private var config = ExerciseConfig.builder(exerciseType = ExerciseType.RUNNING)
@@ -115,6 +107,7 @@ class ExerciseClientRepository @Inject constructor(
     var BPMList: MutableList<Int> = mutableListOf()
     var locationList: MutableList<Pair<Double,Double>> = mutableListOf()
 
+    var timestamp = 0L
 
     //za kalorije i distancu ne mora lista uopste
 
@@ -146,6 +139,7 @@ class ExerciseClientRepository @Inject constructor(
                 Log.d("Heart rate value",_heartRate.value.toString())
 
                 for (element in  latestMetrics.getData(DataType.HEART_RATE_BPM)){
+                    if (ongoing.value == false) break
                     BPMList.add(element.value.toInt())
                     bpm_counter++
                     _avgBPM.value = (_avgBPM.value * (bpm_counter-1) +
@@ -154,7 +148,6 @@ class ExerciseClientRepository @Inject constructor(
 
                 if (exerciseStateInfo.state == ExerciseState.PREPARING){
                     println("PREPARING")
-
                     if (_heartRate.value == 0.0)_sensorState.value = false
                     else _sensorState.value = true
                 }
@@ -168,7 +161,7 @@ class ExerciseClientRepository @Inject constructor(
             if (latestMetrics.getData(DataType.LOCATION).isNotEmpty()){
                 Log.d("LOCATION", latestMetrics.getData(DataType.LOCATION)[0].value.toString())
                 for (element in latestMetrics.getData(DataType.LOCATION)){
-                    locationList.add(Pair(element.value.altitude,element.value.longitude))
+                    locationList.add(Pair(element.value.latitude,element.value.longitude))
                 }
                 //ovo za rutu
             }
@@ -226,13 +219,13 @@ class ExerciseClientRepository @Inject constructor(
                     DataType.DISTANCE
                 ))
             )
-
-
         }
     }
 
     fun startExercise(){
+        length = 0L
         bpm_counter = 0
+        timestamp = Instant.now().epochSecond
         Log.d("EXERCISE START","TYPE: $currentType")
         if (currentType == WorkoutType.GYM){
             dataTypes = setOf(
@@ -272,99 +265,43 @@ class ExerciseClientRepository @Inject constructor(
 
 
 
-
-    fun sendHRToHandheld(){
-        /*
-        salji listu BPM, listu lokacija, totalCals, totalDistance
-         */
-
-        val dataMapRequest = PutDataMapRequest.create("/heartrate/${Instant.now().epochSecond}").apply{
-            dataMap.putByteArray("heartrate",Json.encodeToString(BPMList).toByteArray())
-            BPMList = mutableListOf()
-        }
-        val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
-        dataClient.putDataItem(putDataRequest)
-        .addOnSuccessListener { dataItem->
-            Log.d("DataClient", "DataItem saved: $dataItem")
-        }
-        .addOnFailureListener { exception->
-            Log.d("DataClient","Failed to send: $exception")
-        }
-
+    fun sendHRToHandheld() {
+        handheldClient.sendHRToHandheld(
+            timestamp = timestamp,
+            BPMList = BPMList,
+            currentLabel = currentLabel,
+            length = length)
+        BPMList = mutableListOf()
     }
+
+    fun sendCalories() =
+        handheldClient.sendCalories(
+            timestamp = timestamp,
+            calories = _calories.value.toInt(),
+            currentLabel = currentLabel)
+
+    fun sendDistance() =
+        handheldClient.sendDistance(
+            timestamp = timestamp,
+            distance = _distance.value.toInt(),
+            currentLabel = currentLabel
+        )
+
     fun sendLocationToHandheld(){
-        val dataMapRequest = PutDataMapRequest.create("/location/${Instant.now().epochSecond}").apply{
-            dataMap.putByteArray("location",Json.encodeToString(locationList).toByteArray())
-            locationList = mutableListOf()
-        }
-        val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
-        dataClient.putDataItem(putDataRequest)
-            .addOnSuccessListener { dataItem->
-                Log.d("DataClient", "DataItem saved: $dataItem")
-            }
-            .addOnFailureListener { exception->
-                Log.d("DataClient","Failed to send: $exception")
-            }
+        handheldClient.sendLocationToHandheld(
+            timestamp = timestamp,
+            locationList = locationList,
+            currentLabel = currentLabel
+        )
+        locationList = mutableListOf()
     }
 
-    fun sendDistance(){
-        val dataMapRequest = PutDataMapRequest.create("/distance").apply{
-            dataMap.putInt("distance",_distance.value.toInt())
-        }
-        val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
-        dataClient.putDataItem(putDataRequest)
-            .addOnSuccessListener { dataItem->
-                Log.d("DataClient", "DataItem saved: $dataItem")
-            }
-            .addOnFailureListener { exception->
-                Log.d("DataClient","Failed to send: $exception")
-            }
-    }
+    fun sendSteps(steps: Int) =
+        handheldClient.sendSteps(steps)
 
-    fun sendCalories(){
-        val dataMapRequest = PutDataMapRequest.create("/calories").apply{
-            dataMap.putInt("calories",_calories.value.toInt())
-        }
-        val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
-        dataClient.putDataItem(putDataRequest)
-            .addOnSuccessListener { dataItem->
-                Log.d("DataClient", "DataItem saved: $dataItem")
-            }
-            .addOnFailureListener { exception->
-                Log.d("DataClient","Failed to send: $exception")
-            }
-    }
+    fun sendCaloriesDaily(calories: Int) =
+        handheldClient.sendCaloriesDaily(calories)
 
-
-
-    fun sendCaloriesDaily(calories: Int){
-
-        val dataMapRequest = PutDataMapRequest.create("/calories_daily").apply{
-            dataMap.putInt("calories_daily",calories)
-        }
-        val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
-        dataClient.putDataItem(putDataRequest)
-            .addOnSuccessListener { dataItem->
-                Log.d("DataClient", "DataItem saved: $dataItem")
-            }
-            .addOnFailureListener { exception->
-                Log.d("DataClient","Failed to send: $exception")
-            }
-    }
-
-    fun sendSteps(steps: Int){
-        val dataMapRequest = PutDataMapRequest.create("/steps_daily").apply{
-            dataMap.putInt("steps_daily",steps)
-        }
-        val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
-        dataClient.putDataItem(putDataRequest)
-            .addOnSuccessListener { dataItem->
-                Log.d("DataClient", "DataItem saved: $dataItem")
-            }
-            .addOnFailureListener { exception->
-                Log.d("DataClient","Failed to send: $exception")
-            }
-    }
 
 }
 

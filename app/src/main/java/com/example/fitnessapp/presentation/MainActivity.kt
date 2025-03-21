@@ -247,7 +247,7 @@ fun WearApp(context: Context) {
 
 
 
-    val dialogQueue = mainViewModel.visiblePermissionDialogQueue
+
     val navController = rememberNavController()
 
     val listState = rememberScalingLazyListState()
