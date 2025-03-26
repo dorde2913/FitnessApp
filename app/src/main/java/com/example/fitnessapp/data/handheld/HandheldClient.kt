@@ -89,6 +89,23 @@ class HandheldClient @Inject constructor(
             }
     }
 
+    fun sendDailyHR(list: List<Int>) {
+        val dataMapRequest = PutDataMapRequest.create("/daily_heartrate").apply{
+            dataMap.putByteArray("daily_heartrate", Json.encodeToString(
+                DailyHeartRateUpdate(hrList = list)
+            ).toByteArray())
+        }
+        val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
+        dataClient.putDataItem(putDataRequest)
+            .addOnSuccessListener { dataItem->
+                Log.d("DataClient", "DataItem saved: $dataItem")
+            }
+            .addOnFailureListener { exception->
+                Log.d("DataClient","Failed to send: $exception")
+            }
+    }
+
+
     fun sendCalories(timestamp: Long,
                      calories: Int,
                      currentLabel: String){
@@ -112,7 +129,8 @@ class HandheldClient @Inject constructor(
 
     fun sendCaloriesDaily(calories: Int){
         val dataMapRequest = PutDataMapRequest.create("/calories_daily").apply{
-            dataMap.putInt("calories_daily",calories)
+            dataMap.putByteArray("calories_daily",
+                Json.encodeToString(DailyCaloriesUpdate(calories = calories)).toByteArray())
         }
         val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
         dataClient.putDataItem(putDataRequest)
@@ -126,7 +144,8 @@ class HandheldClient @Inject constructor(
 
     fun sendSteps(steps: Int){
         val dataMapRequest = PutDataMapRequest.create("/steps_daily").apply{
-            dataMap.putInt("steps_daily",steps)
+            dataMap.putByteArray("steps_daily",
+                Json.encodeToString(DailyStepsUpdate(steps = steps)).toByteArray())
         }
         val putDataRequest = dataMapRequest.asPutDataRequest().setUrgent()
         dataClient.putDataItem(putDataRequest)

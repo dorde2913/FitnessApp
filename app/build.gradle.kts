@@ -112,4 +112,9 @@ dependencies {
 
     implementation(libs.datastore.preferences)
 
+    //implementation(libs.wearable)
+    //implementation("com.google.android.gms:play-services-wearable:19.0.0")
+    implementation(libs.wear.phone.interactions)
+    implementation(libs.wear.remote.interactions)
+
 }

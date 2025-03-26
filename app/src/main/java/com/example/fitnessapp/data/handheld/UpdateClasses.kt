@@ -31,3 +31,15 @@ data class DistanceUpdate(
     val label: String,
     val distance: Int
 )
+@Serializable
+data class DailyCaloriesUpdate(
+    val calories: Int = 0
+)
+@Serializable
+data class DailyStepsUpdate(
+    val steps:Int = 0
+)
+@Serializable
+data class DailyHeartRateUpdate(
+    val hrList: List<Int> = listOf()
+)

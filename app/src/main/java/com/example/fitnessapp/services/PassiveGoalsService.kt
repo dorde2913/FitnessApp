@@ -12,6 +12,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.health.services.client.PassiveListenerService
 import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
+import com.example.fitnessapp.data.handheld.HandheldClient
 
 import com.example.fitnessapp.presentation.MAX_KEY
 import com.example.fitnessapp.presentation.MIN_KEY
@@ -31,9 +32,8 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class PassiveGoalsService : PassiveListenerService(){
-
     @Inject lateinit var repository: PassiveMonitoringRepository
-    @Inject lateinit var exerciseClientRepository: ExerciseClientRepository
+    @Inject lateinit var handheldClient: HandheldClient
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
@@ -57,14 +57,14 @@ class PassiveGoalsService : PassiveListenerService(){
             repository._steps.value = dataPoints.getData(DataType.STEPS_DAILY)[0].value.toInt()
             println(repository._steps.value)
 
-            exerciseClientRepository.sendSteps(repository._steps.value)
+            handheldClient.sendSteps(repository._steps.value)
         }
 
         if (dataPoints.getData(DataType.CALORIES_DAILY).isNotEmpty()){
             repository._calories.value =
                 dataPoints.getData(DataType.CALORIES_DAILY)[0].value.toInt()
 
-            exerciseClientRepository.sendCaloriesDaily(repository._calories.value)
+            handheldClient.sendCaloriesDaily(repository._calories.value)
         }
 
         if (dataPoints.getData(DataType.HEART_RATE_BPM).isNotEmpty()){
@@ -95,6 +95,7 @@ class PassiveGoalsService : PassiveListenerService(){
                 if (max!=null)
                     if (heartrate > max.value){
                         repository.setMaxHr(hour = max.hour, value = heartrate)
+                        handheldClient.sendDailyHR(repository.getHRMaxesNoFlow().map{it.value})
                     }
             }
 

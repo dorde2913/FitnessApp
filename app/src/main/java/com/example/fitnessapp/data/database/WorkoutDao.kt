@@ -27,16 +27,20 @@ interface WorkoutDao {
     suspend fun insert(heartRate: HeartRate)
 
     @Query("SELECT * FROM Heartrate WHERE hour = :hour")
-    suspend fun getMaxHR(hour: Int): HeartRate
+    suspend fun getMaxHR(hour: Int): HeartRate?
 
     @Query("UPDATE Heartrate SET value = :value WHERE hour = :hour")
-    fun updateMaxHR(value: Int, hour: Int)
+    suspend fun updateMaxHR(value: Int, hour: Int)
 
     @Query("SELECT * FROM Heartrate ORDER BY hour")
     fun getHRMaxes(): Flow<List<HeartRate>>
 
     @Query("UPDATE Heartrate SET value = 0 WHERE hour > :hour")
     suspend fun resetDailyBPM(hour: Int)
+
+    @Query("SELECT * FROM Heartrate ORDER BY hour")
+    suspend fun getHRMaxesNoFlow(): List<HeartRate>
+
 
 //    @Query("UPDATE PassiveStats SET minHR = :value")
 //    fun setMinHR(value: Int)

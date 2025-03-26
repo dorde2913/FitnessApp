@@ -124,7 +124,14 @@ val DAILY_LEN = longPreferencesKey("daily_len")
 val AVG_LEN = longPreferencesKey("avg_len")
 val AVG_BPM = longPreferencesKey("avg_bpm")
 val AVG_CAL = longPreferencesKey("avg_cal")
+val AVG_DIST = longPreferencesKey("avg_dist")
+
+val NUM_CARDIO = longPreferencesKey("num_cardio")
 val NUM_WORKOUTS = longPreferencesKey("num_workouts")
+
+val STEPS_GOAL = intPreferencesKey("steps_goal")
+val CALS_GOAL = intPreferencesKey("cals_goal")
+
 
 
 
@@ -153,7 +160,8 @@ fun scheduleWork(context: Context){
 //    val dailyWorkRequest = OneTimeWorkRequestBuilder<DailyWorker>()
 //        .build()
 
-    val operation = WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+    val operation = WorkManager.getInstance(context)
+        .enqueueUniquePeriodicWork(
         "DailyWorker",
         ExistingPeriodicWorkPolicy.UPDATE,
         dailyWorkRequest
@@ -237,7 +245,7 @@ fun WearApp(context: Context) {
     LaunchedEffect(Unit) {
         passiveViewModel.subscribe()
         scheduleWork(context)
-        passiveViewModel.clearHRMaxes(hour)
+        //passiveViewModel.clearHRMaxes(hour)
         println("REQUIRED PERMS")
         for (perm in req_perms){
             println(perm)

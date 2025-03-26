@@ -10,8 +10,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fitnessapp.presentation.AVG_BPM
 import com.example.fitnessapp.presentation.AVG_CAL
+import com.example.fitnessapp.presentation.AVG_DIST
 import com.example.fitnessapp.presentation.AVG_LEN
 import com.example.fitnessapp.presentation.DAILY_LEN
+import com.example.fitnessapp.presentation.NUM_CARDIO
 import com.example.fitnessapp.presentation.NUM_WORKOUTS
 import com.example.fitnessapp.presentation.dataStore
 import com.example.fitnessapp.repositories.ExerciseClientRepository
@@ -247,6 +249,8 @@ class WorkoutViewModel @Inject constructor(
                 if (preferences[NUM_WORKOUTS] == null) preferences[NUM_WORKOUTS] = 1
                 else preferences[NUM_WORKOUTS] = preferences[NUM_WORKOUTS]!! + 1
 
+
+
                 if (preferences[AVG_LEN] == null) preferences[AVG_LEN] = _uiState.value.workoutLength
                 else {
                     preferences[AVG_LEN] =
@@ -267,6 +271,25 @@ class WorkoutViewModel @Inject constructor(
                         (preferences[AVG_CAL]!! * (preferences[NUM_WORKOUTS]!! -1)
                             + _uiState.value.totalCals.toLong()) / preferences[NUM_WORKOUTS]!!
                 }
+
+                if (_uiState.value.type == WorkoutType.CARDIO){
+
+                    if (preferences[NUM_CARDIO] == null)
+                        preferences[NUM_CARDIO] = 1
+                    else preferences[NUM_CARDIO] = preferences[NUM_CARDIO]!! + 1
+
+
+                    if (preferences[AVG_DIST] == null)
+                        preferences[AVG_DIST] = _uiState.value.distance.toLong()
+                    else {
+                        preferences[AVG_DIST] =
+                            (preferences[AVG_DIST]!! * (preferences[NUM_CARDIO]!! -1)
+                                    + _uiState.value.distance.toLong()) / preferences[NUM_CARDIO]!!
+                    }
+
+                }
+
+
             }
         }
 

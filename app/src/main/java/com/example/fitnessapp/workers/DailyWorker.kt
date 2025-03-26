@@ -10,6 +10,7 @@ import com.example.fitnessapp.presentation.MAX_KEY
 import com.example.fitnessapp.presentation.MIN_KEY
 import com.example.fitnessapp.presentation.dataStore
 import com.example.fitnessapp.repositories.PassiveMonitoringRepository
+import com.example.fitnessapp.repositories.WorkoutRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,12 +21,15 @@ import javax.inject.Inject
 class DailyWorker @AssistedInject constructor(
     @Assisted val context: Context,
     @Assisted val workerParams: WorkerParameters,
+    @Assisted val repository: PassiveMonitoringRepository
 ): CoroutineWorker(context, workerParams){
+
 
 
 
     override suspend fun doWork(): Result {
         //ovde cemo da resetujemo sve vrednosti
+
 
         println("WORKER WORKIN")
 
@@ -33,7 +37,10 @@ class DailyWorker @AssistedInject constructor(
             preferences[MAX_KEY] = 0
             preferences[MIN_KEY] = 0
             preferences[DAILY_LEN] = 0
+        }
 
+        for (i in 0 until 24){
+            repository.setMaxHr(i,0)
         }
 
 

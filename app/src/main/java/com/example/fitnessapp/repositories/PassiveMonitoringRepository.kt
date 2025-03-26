@@ -29,6 +29,11 @@ class PassiveMonitoringRepository @Inject constructor(
 
     val hrMaxes = dao.getHRMaxes()
 
+    suspend fun getHRMaxesNoFlow() =
+        dao.getHRMaxesNoFlow()
+
+
+
 
     val _steps = MutableStateFlow(0)
     val steps = _steps.asStateFlow()
@@ -57,8 +62,13 @@ class PassiveMonitoringRepository @Inject constructor(
     suspend fun getMaxHR(hour: Int) =
         dao.getMaxHR(hour)
 
-    fun setMaxHr(hour: Int, value: Int) =
+
+    suspend fun setMaxHr(hour: Int, value: Int) =
         dao.updateMaxHR(value = value, hour = hour)
+
+
+
+
 
 //    fun setMaxDailyHR(value: Int) =
 //        dao.setMaxHR(value)

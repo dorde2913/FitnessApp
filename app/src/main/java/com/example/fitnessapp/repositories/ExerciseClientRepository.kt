@@ -296,11 +296,11 @@ class ExerciseClientRepository @Inject constructor(
         locationList = mutableListOf()
     }
 
-    fun sendSteps(steps: Int) =
-        handheldClient.sendSteps(steps)
-
-    fun sendCaloriesDaily(calories: Int) =
-        handheldClient.sendCaloriesDaily(calories)
+//    fun sendSteps(steps: Int) =
+//        handheldClient.sendSteps(steps)
+//
+//    fun sendCaloriesDaily(calories: Int) =
+//        handheldClient.sendCaloriesDaily(calories)
 
 
 }

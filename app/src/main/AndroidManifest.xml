@@ -29,6 +29,7 @@
         android:name="com.example.fitnessapp.FitnessApplication"
         android:allowBackup="true"
         android:icon="@mipmap/fitlogo"
+        android:roundIcon="@mipmap/fitlogo_round"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault">
@@ -75,7 +76,11 @@
             <intent-filter>
                 <!-- listeners receive events that match the action and data filters -->
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
-                <data android:scheme="wear" android:host="*" android:path="/heartrate"/>
+                <data android:scheme="wear"/>
+                <data android:host="*"/>
+                <data android:path="/heartrate"/>
+                <data android:path="/steps_goal"/>
+                <data android:path="/cals_goal"/>
             </intent-filter>
         </service>
 
