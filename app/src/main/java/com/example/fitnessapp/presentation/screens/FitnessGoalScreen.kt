@@ -16,14 +16,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumnDefaults
-import androidx.wear.compose.foundation.pager.VerticalPager
-import androidx.wear.compose.foundation.pager.rememberPagerState
 import com.example.fitnessapp.R
 import com.example.fitnessapp.presentation.AVG_BPM
 import com.example.fitnessapp.presentation.AVG_CAL
 import com.example.fitnessapp.presentation.AVG_DIST
 import com.example.fitnessapp.presentation.AVG_LEN
-import com.example.fitnessapp.presentation.DAILY_LEN
 import com.example.fitnessapp.presentation.dataStore
 import kotlinx.coroutines.flow.map
 import java.time.LocalTime
@@ -70,7 +67,7 @@ fun FitnessGoalScreen(modifier: Modifier = Modifier){
     ) {
 
         item{
-            Text(text = "Workout\nAverages",color = Color.White, fontSize = 25.sp,
+            Text(text = "Workout\nAverages",color = Color.White, fontSize = 22.sp,
                 modifier = Modifier.padding(bottom = 20.dp))
         }
 
@@ -79,7 +76,7 @@ fun FitnessGoalScreen(modifier: Modifier = Modifier){
 
             DailyActivityRow(
                 icon = R.drawable.stopwatchicon_removebg_preview,
-                iconSize = 25,
+                iconSize = 30,
                 value = LocalTime.ofNanoOfDay((length?:0) * 1_000_000).format(formatter),
                 goal = null,
                 color = Color.Yellow,

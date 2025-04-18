@@ -20,6 +20,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="com.google.android.gms.permission.WEARABLE_COMMUNICATION" />
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <uses-feature android:name="android.hardware.type.watch" />
 
 
@@ -52,7 +55,6 @@
             android:theme="@style/MainActivityTheme.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -81,6 +83,7 @@
                 <data android:path="/heartrate"/>
                 <data android:path="/steps_goal"/>
                 <data android:path="/cals_goal"/>
+                <data android:path="/workout_labels"/>
             </intent-filter>
         </service>
 
@@ -88,6 +91,16 @@
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
             tools:node="remove" />
+
+        <receiver android:name=".broadcastreceivers.BootReceiver"
+            android:exported="true"
+            android:enabled="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+
+        </receiver>
 
     </application>
 

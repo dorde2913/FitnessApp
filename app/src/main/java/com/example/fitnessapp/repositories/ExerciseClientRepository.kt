@@ -1,9 +1,7 @@
 package com.example.fitnessapp.repositories
 
 import android.content.Context
-import android.health.connect.datatypes.units.Length
 import android.util.Log
-import androidx.datastore.preferences.core.edit
 import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServices
 import androidx.health.services.client.data.Availability
@@ -14,9 +12,9 @@ import androidx.health.services.client.data.ExerciseEndReason
 import androidx.health.services.client.data.ExerciseLapSummary
 import androidx.health.services.client.data.ExerciseState
 import androidx.health.services.client.data.ExerciseTrackedStatus
+import androidx.health.services.client.data.ExerciseTrackedStatus.Companion.NO_EXERCISE_IN_PROGRESS
 import androidx.health.services.client.data.ExerciseType
 import androidx.health.services.client.data.ExerciseUpdate
-import androidx.health.services.client.data.LocationData
 import androidx.health.services.client.data.WarmUpConfig
 import androidx.health.services.client.endExercise
 import androidx.health.services.client.getCurrentExerciseInfo
@@ -25,26 +23,14 @@ import androidx.health.services.client.prepareExercise
 import androidx.health.services.client.resumeExercise
 import androidx.health.services.client.startExercise
 import com.example.fitnessapp.data.handheld.HandheldClient
-import com.example.fitnessapp.presentation.MAX_KEY
-import com.example.fitnessapp.presentation.MIN_KEY
-import com.example.fitnessapp.presentation.dataStore
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
-import com.google.android.gms.wearable.DataEvent
-import com.google.android.gms.wearable.DataMapItem
-import com.google.android.gms.wearable.PutDataMapRequest
-import com.google.android.gms.wearable.Wearable
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import java.nio.ByteBuffer
 import java.time.Instant
-import java.time.LocalTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -131,7 +117,7 @@ class ExerciseClientRepository @Inject constructor(
             else ongoing.value = false
 
 
-            printEnded(exerciseStateInfo.state.isEnded,exerciseStateInfo.endReason)
+           // printEnded(exerciseStateInfo.state.isEnded,exerciseStateInfo.endReason)
 
             /* BPM */
             if (latestMetrics.getData(DataType.HEART_RATE_BPM).isNotEmpty()){
@@ -207,7 +193,7 @@ class ExerciseClientRepository @Inject constructor(
 
         CoroutineScope(Dispatchers.Default).launch {
             exerciseClient.setUpdateCallback(callback)
-            if (exerciseClient.getCurrentExerciseInfo().exerciseTrackedStatus != ExerciseTrackedStatus.NO_EXERCISE_IN_PROGRESS){
+            if (exerciseClient.getCurrentExerciseInfo().exerciseTrackedStatus != NO_EXERCISE_IN_PROGRESS){
                 exerciseClient.endExercise()
             }
             exerciseClient.prepareExercise(
@@ -296,30 +282,11 @@ class ExerciseClientRepository @Inject constructor(
         locationList = mutableListOf()
     }
 
-//    fun sendSteps(steps: Int) =
-//        handheldClient.sendSteps(steps)
-//
-//    fun sendCaloriesDaily(calories: Int) =
-//        handheldClient.sendCaloriesDaily(calories)
-
-
-}
-
-fun printEnded(ended: Boolean, reason: Int){
-    if (ended){
-        Log.d("Exercise Update","Exercise ended: $ended")
-        println("REASON :")
-        println(
-            when(reason){
-                ExerciseEndReason.UNKNOWN -> "Unknown"
-                ExerciseEndReason.USER_END -> "USER_END"
-                ExerciseEndReason.AUTO_END_SUPERSEDED -> "AUTO_END_SUPERSEDED"
-                ExerciseEndReason.AUTO_END_PAUSE_EXPIRED -> "AUTO_END_PAUSE_EXPIRED"
-                ExerciseEndReason.AUTO_END_PERMISSION_LOST -> "AUTO_END_PERMISSION_LOST"
-                ExerciseEndReason.AUTO_END_MISSING_LISTENER -> "AUTO_END_MISSING_LISTENER"
-                ExerciseEndReason.AUTO_END_PREPARE_EXPIRED -> "AUTO_END_PREPARE_EXPIRED"
-                else -> ""
-            }
-        )
+    fun sendSpeed(){
+        //
     }
+
+
 }
+
+

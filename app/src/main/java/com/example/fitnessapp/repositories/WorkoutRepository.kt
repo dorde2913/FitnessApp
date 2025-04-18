@@ -21,4 +21,7 @@ class WorkoutRepository @Inject constructor(
 
     fun getWorkoutByLabel(label: String) =
         workoutDao.getWorkoutByLabel(label)
+
+    suspend fun clearLabels() =
+        workoutDao.clearLabels()
 }

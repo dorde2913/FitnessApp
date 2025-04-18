@@ -6,14 +6,10 @@
 package com.example.fitnessapp.presentation
 
 
-import android.Manifest
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.ACTIVITY_RECOGNITION
 import android.Manifest.permission.BODY_SENSORS
-import android.Manifest.permission.BODY_SENSORS_BACKGROUND
-import android.Manifest.permission.FOREGROUND_SERVICE_HEALTH
-import android.Manifest.permission.FOREGROUND_SERVICE_LOCATION
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Activity
 import android.content.Context
@@ -22,6 +18,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -30,17 +27,8 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-
-import android.provider.Settings
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-
-
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -49,44 +37,25 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-
-
 import androidx.lifecycle.viewmodel.compose.viewModel
-
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
-import androidx.wear.compose.material.Button
-
 import androidx.wear.compose.material.PositionIndicator
 import androidx.wear.compose.material.Scaffold
-import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.Vignette
 import androidx.wear.compose.material.VignettePosition
-import androidx.wear.compose.material.dialog.Confirmation
-import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequest
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.fitnessapp.presentation.screens.DailyActivityScreen
@@ -108,7 +77,6 @@ import com.example.fitnessapp.presentation.screens.WorkoutComposables.WorkoutScr
 import com.example.fitnessapp.presentation.stateholders.PassiveViewModel
 import com.example.fitnessapp.presentation.stateholders.WorkoutViewModel
 import com.example.fitnessapp.presentation.theme.FitnessAppTheme
-import com.example.fitnessapp.repositories.PassiveMonitoringRepository
 import com.example.fitnessapp.workers.DailyWorker
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.Instant
@@ -132,6 +100,8 @@ val NUM_WORKOUTS = longPreferencesKey("num_workouts")
 val STEPS_GOAL = intPreferencesKey("steps_goal")
 val CALS_GOAL = intPreferencesKey("cals_goal")
 
+val DAILY_STEPS = intPreferencesKey("daily_steps")
+val DAILY_CALS = intPreferencesKey("daily_cals")
 
 
 
@@ -163,7 +133,7 @@ fun scheduleWork(context: Context){
     val operation = WorkManager.getInstance(context)
         .enqueueUniquePeriodicWork(
         "DailyWorker",
-        ExistingPeriodicWorkPolicy.UPDATE,
+        ExistingPeriodicWorkPolicy.KEEP,
         dailyWorkRequest
     )
 
@@ -199,6 +169,7 @@ fun WearApp(context: Context) {
 
     val workoutViewModel: WorkoutViewModel = viewModel()
     val passiveViewModel: PassiveViewModel = viewModel()
+
 
 
     var checked by rememberSaveable { mutableStateOf(
@@ -265,7 +236,8 @@ fun WearApp(context: Context) {
                 Vignette(vignettePosition = VignettePosition.TopAndBottom)
             },
             //timeText = { if (navController.currentDestination?.route != DestinationWorkout.route) TimeText()},
-            positionIndicator = { PositionIndicator(scalingLazyListState = listState) }
+            positionIndicator = { PositionIndicator(scalingLazyListState = listState) },
+
         ) {
 
             NavHost(

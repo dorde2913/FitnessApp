@@ -10,12 +10,8 @@ import com.example.fitnessapp.presentation.MAX_KEY
 import com.example.fitnessapp.presentation.MIN_KEY
 import com.example.fitnessapp.presentation.dataStore
 import com.example.fitnessapp.repositories.PassiveMonitoringRepository
-import com.example.fitnessapp.repositories.WorkoutRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import dagger.hilt.android.AndroidEntryPoint
-import java.lang.Thread.sleep
-import javax.inject.Inject
 
 @HiltWorker
 class DailyWorker @AssistedInject constructor(

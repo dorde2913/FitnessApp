@@ -1,30 +1,22 @@
 package com.example.fitnessapp.services
 
-import android.content.Context
 import android.content.Intent
-import android.preference.PreferenceDataStore
 import android.util.Log
-import androidx.compose.runtime.collectAsState
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.health.services.client.PassiveListenerService
 import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
 import com.example.fitnessapp.data.handheld.HandheldClient
-
+import com.example.fitnessapp.presentation.DAILY_CALS
+import com.example.fitnessapp.presentation.DAILY_STEPS
 import com.example.fitnessapp.presentation.MAX_KEY
 import com.example.fitnessapp.presentation.MIN_KEY
 import com.example.fitnessapp.presentation.dataStore
-import com.example.fitnessapp.repositories.ExerciseClientRepository
 import com.example.fitnessapp.repositories.PassiveMonitoringRepository
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -37,12 +29,12 @@ class PassiveGoalsService : PassiveListenerService(){
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        CoroutineScope(Dispatchers.Default).launch {
-            while(true){
-                println("passive service running")
-                delay(5000)
-            }
-        }
+//        CoroutineScope(Dispatchers.Default).launch {
+//            while(true){
+//                println("passive service running")
+//                delay(5000)
+//            }
+//        }
 
         return super.onStartCommand(intent, flags, startId)
     }
@@ -57,12 +49,25 @@ class PassiveGoalsService : PassiveListenerService(){
             repository._steps.value = dataPoints.getData(DataType.STEPS_DAILY)[0].value.toInt()
             println(repository._steps.value)
 
+            CoroutineScope(Dispatchers.IO).launch {
+                this@PassiveGoalsService.dataStore.edit {preferences ->
+                    preferences[DAILY_STEPS] = repository._steps.value
+                }
+            }
+
             handheldClient.sendSteps(repository._steps.value)
         }
 
         if (dataPoints.getData(DataType.CALORIES_DAILY).isNotEmpty()){
             repository._calories.value =
                 dataPoints.getData(DataType.CALORIES_DAILY)[0].value.toInt()
+
+            CoroutineScope(Dispatchers.IO).launch {
+                this@PassiveGoalsService.dataStore.edit {preferences ->
+                    preferences[DAILY_CALS] = repository._calories.value
+                }
+            }
+
 
             handheldClient.sendCaloriesDaily(repository._calories.value)
         }
