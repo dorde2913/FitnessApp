@@ -25,8 +25,16 @@
 
     <uses-feature android:name="android.hardware.type.watch" />
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
 
+    <queries>
+        <intent>
+            <action
+                android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
 
     <application
         android:name="com.example.fitnessapp.FitnessApplication"
@@ -84,6 +92,8 @@
                 <data android:path="/steps_goal"/>
                 <data android:path="/cals_goal"/>
                 <data android:path="/workout_labels"/>
+                <data android:path="/simple_stats"/>
+
             </intent-filter>
         </service>
 
@@ -101,6 +111,11 @@
             </intent-filter>
 
         </receiver>
+
+
+
+
+
 
     </application>
 

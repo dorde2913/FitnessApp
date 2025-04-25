@@ -24,8 +24,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import com.example.fitnessapp.R
 import com.example.fitnessapp.data.database.entities.Workout
+import com.example.fitnessapp.presentation.screens.PhoneChip
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import com.example.fitnessapp.presentation.stateholders.WorkoutViewModel
 import java.time.LocalTime
@@ -42,6 +44,8 @@ fun WorkoutOverview(viewModel: WorkoutViewModel){
     val backgroundColor = Color(workout.color).darken(0.8f)
     val textColor = backgroundColor.getContrastingColor()
 
+
+
     Box(modifier = Modifier.fillMaxSize().background(backgroundColor),
         contentAlignment = Alignment.Center){
 
@@ -55,53 +59,36 @@ fun WorkoutOverview(viewModel: WorkoutViewModel){
             tint = backgroundColor.contrast(),
             modifier = Modifier.size(if (workout.workoutType == WorkoutType.CARDIO) 150.dp else 400.dp))
 
-        Column(modifier = Modifier.fillMaxSize().background(Color.Transparent),
+        ScalingLazyColumn(modifier = Modifier.fillMaxSize().background(Color.Transparent),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ){
 
-            Spacer(modifier = Modifier.height(50.dp))
-            Text("Workout overview", color = textColor, fontSize = 20.sp, textAlign = TextAlign.Center
-                , modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(30.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                Icon(painterResource(R.drawable.stopwatchicon_removebg_preview),null,tint = textColor,
-                    modifier = Modifier.size(20.dp))
-                Text(
-                    LocalTime.ofNanoOfDay(uiState.workoutLength * 1_000_000).format(formatter), color = textColor,
-                    fontSize = 20.sp, textAlign = TextAlign.Center)
+//            item{
+//                Spacer(modifier = Modifier.height(50.dp))
+//            }
+            item{
+                Text("Workout overview", color = textColor, fontSize = 20.sp, textAlign = TextAlign.Center
+                    , modifier = Modifier.fillMaxWidth())
             }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                Icon(painterResource(R.drawable.caloriesicon_removebg_preview),null, tint = textColor,
-                    modifier = Modifier.size(20.dp))
-                Text("${String.format("%.2f",uiState.totalCals)}kcal", color = textColor, fontSize = 20.sp,
-                    textAlign = TextAlign.Center)
+            item{
+                Spacer(modifier = Modifier.height(16.dp))
             }
-
-            if (workout.workoutType == WorkoutType.CARDIO){
-                /*
-                Ovde idu prikazi za distance i average speed npr
-                 */
+            item{
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ){
-                    Icon(painterResource(R.drawable.distanceicon_removebg_preview),null, tint = textColor,
+                    Icon(painterResource(R.drawable.stopwatchicon_removebg_preview),null,tint = textColor,
                         modifier = Modifier.size(20.dp))
-                    Text("${uiState.distance.toInt()}m", color = textColor, fontSize = 20.sp,
-                        textAlign = TextAlign.Center)
+                    Text(
+                        LocalTime.ofNanoOfDay(uiState.workoutLength * 1_000_000).format(formatter), color = textColor,
+                        fontSize = 20.sp, textAlign = TextAlign.Center)
                 }
-                /*
+            }
+
+            item{
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
@@ -109,12 +96,37 @@ fun WorkoutOverview(viewModel: WorkoutViewModel){
                 ){
                     Icon(painterResource(R.drawable.caloriesicon_removebg_preview),null, tint = textColor,
                         modifier = Modifier.size(20.dp))
-                    Text("calories: ${String.format("%.2f",uiState.totalCals)}kcal", color = textColor, fontSize = 20.sp,
+                    Text("${String.format("%.2f",uiState.totalCals)}kcal", color = textColor, fontSize = 20.sp,
                         textAlign = TextAlign.Center)
                 }
+            }
 
+            if (workout.workoutType == WorkoutType.CARDIO){
+                /*
+                Ovde idu prikazi za distance i average speed npr
                  */
+                item{
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Icon(painterResource(R.drawable.distanceicon_removebg_preview),null, tint = textColor,
+                            modifier = Modifier.size(20.dp))
+                        Text("${uiState.distance.toInt()}m", color = textColor, fontSize = 20.sp,
+                            textAlign = TextAlign.Center)
+                    }
+                }
 
+
+            }
+            item{
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+            item{
+                PhoneChip(
+                    "recent"
+                )
             }
 
         }

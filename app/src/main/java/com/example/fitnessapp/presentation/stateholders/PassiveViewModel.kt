@@ -31,6 +31,8 @@ class PassiveViewModel @Inject constructor(
     suspend fun clearHRMaxes(hour: Int) =
         passiveMonitoringRepository.resetDailyBPM(hour)
 
+    suspend fun updateHRMax(hour: Int, value: Int) =
+        passiveMonitoringRepository.setMaxHr(hour,value)
 
 
 }

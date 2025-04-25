@@ -2,15 +2,18 @@ package com.example.fitnessapp.data.handheld
 
 import android.content.Context
 import android.util.Log
+import com.example.fitnessapp.presentation.dataStore
 
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.contracts.contract
 
 
 /*
@@ -19,11 +22,12 @@ class for communication with handheld companion app
 
 @Singleton
 class HandheldClient @Inject constructor(
-    @ApplicationContext context: Context
+    @ApplicationContext val context: Context
 ) {
 
 
     private val dataClient by lazy { Wearable.getDataClient(context)}
+
 
 
     fun sendHRToHandheld(timestamp: Long,

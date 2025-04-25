@@ -17,9 +17,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -39,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,9 +52,12 @@ import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
 import com.example.fitnessapp.R
 import com.example.fitnessapp.data.database.entities.Workout
+import com.example.fitnessapp.presentation.screens.PhoneChip
 import com.example.fitnessapp.presentation.stateholders.TimerState
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import com.example.fitnessapp.presentation.stateholders.WorkoutViewModel
+import java.util.Timer
+import kotlin.concurrent.timer
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -137,53 +143,141 @@ fun OngoingWorkout(viewModel: WorkoutViewModel, navigateToOverview: ()->Unit){
 @Composable
 fun OngoingExerciseOverlay(viewModel: WorkoutViewModel, navigateToOverview: () -> Unit){
     val timerState by viewModel.timerState.collectAsState()
+    val timer by viewModel.stopWatchText.collectAsState()
     Box(
         modifier = Modifier.fillMaxSize()
     ){
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.3f)),
+                .background(Color.Black),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ){
+
+            Text(timer, color = Color.White)
+            Spacer(modifier = Modifier.height(20.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ){
-
-                IconButton(
-                    onClick = {
-                        viewModel.toggleIsRunning()
-                        viewModel.finishExercise()
-                        viewModel.resetTimer()
-                        navigateToOverview()
-                    },
-                    modifier = Modifier.clip(CircleShape).background(Color.Red.darken(0.3f))
-                ) {
-                    Icon(Icons.Filled.Close,null)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(0.5f)
+                ){
+                    IconButton(
+                        onClick = {
+                            viewModel.toggleIsRunning()
+                            viewModel.finishExercise()
+                            viewModel.resetTimer()
+                            navigateToOverview()
+                        },
+                        modifier = Modifier.clip(CircleShape).background(Color.Red.darken(0.3f))
+                    ) {
+                        Icon(Icons.Filled.Close,null)
+                    }
+                    Text("Finish", color = Color.White,
+                        modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                 }
 
 
-                IconButton(
-                    onClick = {
-                        //pause/unpause workout
-                        viewModel.toggleIsRunning()
-                        if (timerState == TimerState.RUNNING) viewModel.pauseExercise()
-                        else viewModel.resumeExercise()
-                    },
-                    modifier = Modifier.clip(CircleShape).background(if (timerState == TimerState.RUNNING)Color.Gray else Color.Green.darken(0.5f))
-                ) {
-                    if (timerState == TimerState.RUNNING)
-                        Icon(painterResource(R.drawable.pauseiconicon_removebg_preview),null)
-                    else Icon(Icons.Default.PlayArrow,null)
+
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(0.5f)){
+                    IconButton(
+                        onClick = {
+                            viewModel.toggleIsRunning()
+                            if (timerState == TimerState.RUNNING) viewModel.pauseExercise()
+                            else viewModel.resumeExercise()
+                        },
+                        modifier = Modifier.clip(CircleShape).background(if (timerState == TimerState.RUNNING)Color.Gray else Color.Green.darken(0.5f))
+                    ) {
+                        if (timerState == TimerState.RUNNING)
+                            Icon(painterResource(R.drawable.pauseiconicon_removebg_preview),null)
+                        else Icon(Icons.Default.PlayArrow,null)
+                    }
+                    Text(text = if (timerState == TimerState.RUNNING) "Pause" else "Continue"
+                        , color = Color.White, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                 }
 
             }
+
+        }
+
+    }
+
+}
+
+@Preview
+@Composable
+fun Preview(){
+    var timerState = TimerState.RUNNING
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f)),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+
+            Text("00:00:00", color = Color.White)
+            Spacer(modifier = Modifier.height(30.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    IconButton(
+                        onClick = {
+
+                        },
+                        modifier = Modifier.clip(CircleShape).background(Color.Red.darken(0.3f))
+                    ) {
+                        Icon(Icons.Filled.Close,null)
+                    }
+                    Text("Finish Workout", color = Color.White)
+                }
+
+
+                Spacer(modifier = Modifier.width(50.dp))
+
+                Column(
+                horizontalAlignment = Alignment.CenterHorizontally){
+                    IconButton(
+                        onClick = {
+                            //pause/unpause workout
+                            if (timerState == TimerState.RUNNING) timerState = TimerState.PAUSED
+                            else timerState = TimerState.RUNNING
+                        },
+                        modifier = Modifier.clip(CircleShape).background(if (timerState == TimerState.RUNNING)Color.Gray else Color.Green.darken(0.5f))
+                    ) {
+                        if (timerState == TimerState.RUNNING)
+                            Icon(painterResource(R.drawable.pauseiconicon_removebg_preview),null)
+                        else Icon(Icons.Default.PlayArrow,null)
+                    }
+                    Text(text = if (timerState == TimerState.RUNNING) "Pause Workout" else "Continue Workout"
+                        , color = Color.White)
+                }
+                
+            }
+
+
+
         }
     }
 }
+
 
 @Composable
 fun OngoingWorkoutChip(label: String, icon: Int? = null,iconSize: Int?=null, borderColor: Color?=null,

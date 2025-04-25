@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import androidx.work.impl.utils.ForceStopRunnable.BroadcastReceiver
+import com.example.fitnessapp.presentation.scheduleWork
 import com.example.fitnessapp.repositories.PassiveMonitoringRepository
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -30,6 +31,7 @@ class BootReceiver : BroadcastReceiver() {
             val repository = getRepository(context)
             CoroutineScope(Dispatchers.Main).launch {
                 repository.subscribe()
+                scheduleWork(context)
             }
         }
     }

@@ -246,6 +246,8 @@ class WorkoutViewModel @Inject constructor(
                 else preferences[DAILY_LEN] =
                     _uiState.value.workoutLength + preferences[DAILY_LEN]!!
 
+
+
                 if (preferences[NUM_WORKOUTS] == null) preferences[NUM_WORKOUTS] = 1
                 else preferences[NUM_WORKOUTS] = preferences[NUM_WORKOUTS]!! + 1
 

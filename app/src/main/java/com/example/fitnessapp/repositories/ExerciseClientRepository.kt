@@ -37,7 +37,8 @@ import javax.inject.Singleton
 @Singleton
 class ExerciseClientRepository @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val handheldClient: HandheldClient
+    private val handheldClient: HandheldClient,
+    private val passiveMonitoringRepository: PassiveMonitoringRepository
 ) {
     private val healthServicesClient = HealthServices.getClient(context)
     private val exerciseClient = healthServicesClient.exerciseClient
@@ -124,6 +125,11 @@ class ExerciseClientRepository @Inject constructor(
                 _heartRate.value = latestMetrics.getData(DataType.HEART_RATE_BPM).last().value
                 Log.d("Heart rate value",_heartRate.value.toString())
 
+                val max = latestMetrics.getData(DataType.HEART_RATE_BPM).maxOfOrNull { it.value }
+                val min = latestMetrics.getData(DataType.HEART_RATE_BPM).minOfOrNull { it.value }
+                if (max != null && min != null)passiveMonitoringRepository.sendMinMax(max = max.toInt(), min = min.toInt())
+
+
                 for (element in  latestMetrics.getData(DataType.HEART_RATE_BPM)){
                     if (ongoing.value == false) break
                     BPMList.add(element.value.toInt())
@@ -177,6 +183,8 @@ class ExerciseClientRepository @Inject constructor(
         }
 
     }
+
+
 
     fun pauseExercise(){
         CoroutineScope(Dispatchers.Default).launch {
@@ -282,9 +290,7 @@ class ExerciseClientRepository @Inject constructor(
         locationList = mutableListOf()
     }
 
-    fun sendSpeed(){
-        //
-    }
+
 
 
 }

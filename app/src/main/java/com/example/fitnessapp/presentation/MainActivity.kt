@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+
 import androidx.compose.ui.platform.LocalView
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -55,6 +56,7 @@ import androidx.wear.compose.material.PositionIndicator
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Vignette
 import androidx.wear.compose.material.VignettePosition
+import androidx.wear.compose.material3.TimeText
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -133,7 +135,7 @@ fun scheduleWork(context: Context){
     val operation = WorkManager.getInstance(context)
         .enqueueUniquePeriodicWork(
         "DailyWorker",
-        ExistingPeriodicWorkPolicy.KEEP,
+        ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
         dailyWorkRequest
     )
 
@@ -160,6 +162,7 @@ class MainActivity : ComponentActivity() {
             WearApp(this)
         }
     }
+
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -183,8 +186,12 @@ fun WearApp(context: Context) {
     val view = LocalView.current
     DisposableEffect(checked) {
 
-        view.keepScreenOn = checked
-        onDispose {}
+        println("changed keep screen on")
+        view.keepScreenOn = checked //only for this activity
+        onDispose {
+            //view.keepScreenOn = false
+            println("Disposed")
+        }
 
     }
 
@@ -235,7 +242,7 @@ fun WearApp(context: Context) {
             vignette = {
                 Vignette(vignettePosition = VignettePosition.TopAndBottom)
             },
-            //timeText = { if (navController.currentDestination?.route != DestinationWorkout.route) TimeText()},
+            timeText = { TimeText()},
             positionIndicator = { PositionIndicator(scalingLazyListState = listState) },
 
         ) {

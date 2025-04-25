@@ -5,6 +5,7 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Build
 import android.os.PowerManager
 import android.util.Log
@@ -17,6 +18,7 @@ import com.example.fitnessapp.R
 import com.example.fitnessapp.presentation.MainActivity
 import com.example.fitnessapp.presentation.stateholders.WorkoutType
 import com.example.fitnessapp.repositories.ExerciseClientRepository
+import com.example.fitnessapp.repositories.PassiveMonitoringRepository
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
@@ -40,6 +42,8 @@ class FitService @Inject constructor()
     @SuppressLint("MissingPermission")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
+
+
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp:WakeLock")
         wakeLock.acquire(10*60*1000L /*10 minutes*/)
@@ -61,11 +65,10 @@ class FitService @Inject constructor()
                 if (exerciseClientRepository.currentType == WorkoutType.CARDIO){
                     exerciseClientRepository.sendDistance()
                     exerciseClientRepository.sendLocationToHandheld()
-                    exerciseClientRepository.sendSpeed()
                 }
 
 
-                delay(1000 * 60 )//3 minutes
+                delay(1000 * 60 )//a minute
             }
         }
 

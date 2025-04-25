@@ -66,6 +66,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
 
 @Composable
 fun HealthScreen(modifier: Modifier = Modifier, viewModel: PassiveViewModel){
@@ -88,12 +90,21 @@ fun HealthScreen(modifier: Modifier = Modifier, viewModel: PassiveViewModel){
             it[MAX_KEY]
         }.collectAsState(initial = 0)
 
+    val hrMaxes by viewModel.hrMaxes.collectAsState(initial = listOf())
 
 
     val heartRateCallback = object : MeasureCallback{
         override fun onDataReceived(data: DataPointContainer) {
             if (data.getData(DataType.HEART_RATE_BPM).isNotEmpty()){
                 currentHR = data.getData(DataType.HEART_RATE_BPM)[0].value
+
+                val hour = Instant.ofEpochSecond(Instant.now().epochSecond).atZone(
+                    ZoneId.systemDefault()).hour
+
+
+                if (currentHR > hrMaxes[hour].value){
+                    CoroutineScope(Dispatchers.IO).launch {  viewModel.updateHRMax(hour,currentHR.toInt())}
+                }
 
 
                 if (max == null) CoroutineScope(Dispatchers.Default).launch {
@@ -108,6 +119,8 @@ fun HealthScreen(modifier: Modifier = Modifier, viewModel: PassiveViewModel){
                         preferences[MIN_KEY] = 0
                     }
                 }
+
+
 
 
                 if ((currentHR < (min ?: 0) && currentHR.toInt() != 0)|| min == 0){

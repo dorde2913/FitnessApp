@@ -48,13 +48,13 @@ import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import androidx.core.net.toUri
 
 
 @Composable
 fun DailyActivityScreen(modifier: Modifier = Modifier, viewModel: PassiveViewModel){
 
     val context = LocalContext.current
-
 
 
 
@@ -151,8 +151,6 @@ fun DailyActivityScreen(modifier: Modifier = Modifier, viewModel: PassiveViewMod
         }
 
 
-
-
 }
 
 
@@ -211,20 +209,13 @@ fun PhoneChip(path: String){
 }
 
 fun launchHandheldApp(context: Context, path: String) {
-    val intent = Intent(Intent.ACTION_VIEW).apply {
-        //data = Uri.parse("fitnessapphandheld://open/daily")
-        `package` = "com.example.jimapp"
-    }
-
     val remoteHelper = RemoteActivityHelper(context)
-
-
 
     try{
         val result = remoteHelper.startRemoteActivity(
             Intent(Intent.ACTION_VIEW)
                 .setData(
-                    Uri.parse("fitnessapphandheld://open/$path"))
+                    "fitnessapphandheld://open/$path".toUri())
                 .addCategory(Intent.CATEGORY_BROWSABLE)) //ovo je zapravo obavezno da bude browsable :)
         CoroutineScope(Dispatchers.Main).launch {
             try{

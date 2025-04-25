@@ -29,13 +29,6 @@ class PassiveGoalsService : PassiveListenerService(){
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-//        CoroutineScope(Dispatchers.Default).launch {
-//            while(true){
-//                println("passive service running")
-//                delay(5000)
-//            }
-//        }
-
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -55,7 +48,7 @@ class PassiveGoalsService : PassiveListenerService(){
                 }
             }
 
-            handheldClient.sendSteps(repository._steps.value)
+            //handheldClient.sendSteps(repository._steps.value) not necessary due to HandheldDataListener :)
         }
 
         if (dataPoints.getData(DataType.CALORIES_DAILY).isNotEmpty()){
@@ -69,7 +62,7 @@ class PassiveGoalsService : PassiveListenerService(){
             }
 
 
-            handheldClient.sendCaloriesDaily(repository._calories.value)
+            //handheldClient.sendCaloriesDaily(repository._calories.value)
         }
 
         if (dataPoints.getData(DataType.HEART_RATE_BPM).isNotEmpty()){
@@ -92,15 +85,17 @@ class PassiveGoalsService : PassiveListenerService(){
                     if (preferences[MIN_KEY] == null){
                         preferences[MIN_KEY] = heartrate
                     }
+                    else if (preferences[MIN_KEY]!! > heartrate) preferences[MIN_KEY] = heartrate
                     if (preferences[MAX_KEY] == null){
                         preferences[MAX_KEY] = heartrate
                     }
+                    else if (preferences[MAX_KEY]!! < heartrate) preferences[MAX_KEY] = heartrate
                 }
 
                 if (max!=null)
                     if (heartrate > max.value){
                         repository.setMaxHr(hour = max.hour, value = heartrate)
-                        handheldClient.sendDailyHR(repository.getHRMaxesNoFlow().map{it.value})
+                        //handheldClient.sendDailyHR(repository.getHRMaxesNoFlow().map{it.value})
                     }
             }
 
