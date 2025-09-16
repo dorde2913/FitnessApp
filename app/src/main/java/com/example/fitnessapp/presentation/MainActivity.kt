@@ -242,7 +242,7 @@ fun WearApp(context: Context) {
             vignette = {
                 Vignette(vignettePosition = VignettePosition.TopAndBottom)
             },
-            timeText = { TimeText()},
+
             positionIndicator = { PositionIndicator(scalingLazyListState = listState) },
 
         ) {

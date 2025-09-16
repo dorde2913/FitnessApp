@@ -83,12 +83,12 @@ fun HealthScreen(modifier: Modifier = Modifier, viewModel: PassiveViewModel){
     val min by context.dataStore.data
         .map{
             it[MIN_KEY]
-        }.collectAsState(initial = 0)
+        }.collectAsState(initial = -1)
 
     val max by context.dataStore.data
         .map{
             it[MAX_KEY]
-        }.collectAsState(initial = 0)
+        }.collectAsState(initial = -1)
 
     val hrMaxes by viewModel.hrMaxes.collectAsState(initial = listOf())
 
@@ -120,25 +120,21 @@ fun HealthScreen(modifier: Modifier = Modifier, viewModel: PassiveViewModel){
                     }
                 }
 
-
-
-
-                if ((currentHR < (min ?: 0) && currentHR.toInt() != 0)|| min == 0){
-                    CoroutineScope(Dispatchers.Default).launch {
+                CoroutineScope(Dispatchers.IO).launch {
+                    if ((currentHR < (min ?: 0)|| min == 0 ) && currentHR.toInt() != 0){
                         context.dataStore.edit { preferences ->
                             preferences[MIN_KEY] = currentHR.toInt()
                         }
+                        return@launch
                     }
-                }
-
-
-                if (currentHR > (max ?: 0)){
-                    CoroutineScope(Dispatchers.Default).launch {
+                    if (currentHR > (max ?: 0)){
                         context.dataStore.edit { preferences ->
                             preferences[MAX_KEY] = currentHR.toInt()
                         }
                     }
                 }
+
+
             }
 
 

@@ -9,8 +9,15 @@ import android.speech.SpeechRecognizer
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -21,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -38,40 +46,52 @@ fun SettingScreen(modifier: Modifier = Modifier,context:Context){
     var checked by rememberSaveable { mutableStateOf(sharedPref.getBoolean("screenAlwaysOn",false)) }
 
 
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ){
+        Icon(
+            Icons.Default.Settings,null, tint = Color.DarkGray,
+            modifier = Modifier.size(300.dp)
+        )
 
-
-    ScalingLazyColumn {
-        item{
-            Text("Settings",
-                color = Color.White,
-                textAlign = TextAlign.Center,
-                fontSize = 20.sp,
-                modifier = Modifier.padding(bottom = 30.dp).fillMaxWidth())
-        }
-        item{
-            ToggleChip(
-                checked = checked,
-                label = {
-                    Text("Disable sleep mode during workouts", color = Color.White)
-                },
-                onCheckedChange = { checked = it },
-                toggleControl = {
-                    Switch(
-                        checked = checked,
-                        onCheckedChange = {
-                            checked = it
-                            with (sharedPref.edit()){
-                                putBoolean("screenAlwaysOn",it)
-                                apply()
+        ScalingLazyColumn(
+            modifier = Modifier.background(Color.Transparent)
+        ) {
+            item{
+                Text("Settings",
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(bottom = 30.dp).fillMaxWidth())
+            }
+            item{
+                ToggleChip(
+                    checked = checked,
+                    label = {
+                        Text("Disable sleep mode during workouts", color = Color.White)
+                    },
+                    onCheckedChange = { checked = it },
+                    toggleControl = {
+                        Switch(
+                            checked = checked,
+                            onCheckedChange = {
+                                checked = it
+                                with (sharedPref.edit()){
+                                    putBoolean("screenAlwaysOn",it)
+                                    apply()
+                                }
                             }
-                        }
-                    )
-                }
-            )
+                        )
+                    }
+                )
+            }
+
+
         }
-
-
     }
+
+
 }
 
 
