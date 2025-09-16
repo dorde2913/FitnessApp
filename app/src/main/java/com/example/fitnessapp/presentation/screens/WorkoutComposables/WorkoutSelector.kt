@@ -74,6 +74,8 @@ fun WorkoutSelector(type: WorkoutType, viewModel: WorkoutViewModel, navigateToOn
 
 
     if (workouts[type] != null && workouts[type]?.isNotEmpty() == true){
+        if (workouts[type]?.size!! >= index) index = 0
+
         val animatedFrameColor by animateColorAsState(
             targetValue = Color(workouts[type]?.get(index)?.color ?: MaterialTheme.colors.surface.toArgb()) ,
             animationSpec = tween(durationMillis = 500),
